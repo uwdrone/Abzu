@@ -17,7 +17,7 @@ PAGE= """\
 <title>Raspberry Pi - Surveillance Camera</title>
 </head>
 <body>
-<center><h1>Raspberry Pi - Surveillance Camera</h1></center>
+<center><h1>Raspberry Pi - Fish Camera</h1></center>
 <center><img src="stream.mjpg" width="640" height="480"></center>
 </body>
 </html>
@@ -73,7 +73,7 @@ class StreamingHandler(server.BaseHTTPRequestHandler):
                     self.wfile.write(b'\r\n')
             except Exception as e:
                 logging.warning(
-                    'Removed streaming client %s: %s',
+                    'Remov92.168.1.112:8ed streaming client %s: %s',
                     self.client_address, str(e))
         else:
             self.send_error(404)
@@ -89,6 +89,7 @@ with picamera.PiCamera(resolution='640x480', framerate=24) as camera:
     #camera.rotation = 90
     camera.start_recording(output, format='mjpeg')
     try:
+        TCP_IP = '192.168.1.191'
         address = ('', 8000)
         server = StreamingServer(address, StreamingHandler)
         server.serve_forever()
