@@ -22,19 +22,20 @@ def: motorController:
 
     kit = MotorKit() #initialize motor object for first HAT
     kit1 = MotorKit(0x61) #initialize motor object for second HAT, 0x61 i2c adress
+    initMotorKits(kit, kit1)
     
     (conn, addr) = s.accept()
     print("Connected")
 
-    while True:
-        motor1 = Motor(kit, 1) #forward thrust 1
-        motor2 = Motor(kit, 2) #forward thrust 2
-        motor3 = Motor(kit, 3) #attitude 1 
-        motor4 = Motor(kit, 4) #attitude 2
+    motor1 = Motor(kit, 1, 0.0) #forward thrust 1
+    motor2 = Motor(kit, 2, 0.0) #forward thrust 2
+    motor3 = Motor(kit, 3, 0.0) #attitude 1 
+    motor4 = Motor(kit, 4, 0.0) #attitude 2
 
-        motor5 = Motor(kit1, 1) #attitude 3
-        motor6 = Motor(kit1, 2) #attitude 4
+    motor5 = Motor(kit1, 1, 0.0) #attitude 3
+    motor6 = Motor(kit1, 2, 0.0) #attitude 4
         
+    while True:
         message = conn.recv(1024) #receive message over socket
         command = parseMsg(message) #parse message into motor command tuple
         
@@ -62,3 +63,15 @@ def: motorController:
             
         
     conn.close() #Close socket
+
+
+def initMotorKits(*args):
+    for kit in args:
+        kit.motor1.throttle = 0.0
+        kit.motor2.throttle = 0.0
+        kit.motor3.throttle = 0.0
+        kit.motor4.throttle = 0.0
+        kit.motor5.throttle = 0.0
+        kit.motor5.throttle = 0.0
+    
+    
