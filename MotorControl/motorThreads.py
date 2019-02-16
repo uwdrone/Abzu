@@ -10,7 +10,7 @@ class MotorCommandsReceiver(Thread):
         self.inputMap = inputMap
         self.inputLock = inputLock
         self.HOST = '192.168.1.101' #Server IP
-        self.PORT = 12349 #TCP Port
+        self.PORT = 12657 #TCP Port
         self.sock = socket
 
     def run(self):
@@ -38,6 +38,8 @@ class MotorCommandsReceiver(Thread):
                 #print("pushing commands")
                 self.pushInput(message.decode())
                 self.inputLock.release()
+                
+        conn.close()            
     
     def pushInput(self, message):
         lst = message.split('|')
