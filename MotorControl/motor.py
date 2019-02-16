@@ -18,14 +18,16 @@ class Motor:
         
 
     def throttle(self, value, delay):
-        print("Prev Throttle " + str(self.prevThrottle))
-        difference = value - self.prevThrottle 
+        #print("Prev Throttle " + str(self.prevThrottle))
+        difference = value - self.prevThrottle
+        if difference == 0:
+            return
         step = difference/(abs(difference)*32)
-        print("Difference " + str(difference))
-        print("Step " + str(step))
+        #print("Difference " + str(difference))
+        #print("Step " + str(step))
 
         while(self.prevThrottle != value):
-            print("Acceleration " + str(self.prevThrottle)) 
+            #print("Acceleration " + str(self.prevThrottle)) 
             self.prevThrottle += step
             self.motorFunction.throttle = self.prevThrottle
             time.sleep(delay)
