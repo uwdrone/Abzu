@@ -10,7 +10,7 @@ class MotorCommandsReceiver(Thread):
         self.inputMap = inputMap
         self.inputLock = inputLock
         self.HOST = '192.168.1.101' #Server IP
-        self.PORT = 12657 #TCP Port
+        self.PORT = 12659 #TCP Port
         self.sock = socket
 
     def run(self):
@@ -38,7 +38,7 @@ class MotorCommandsReceiver(Thread):
                 #print("pushing commands")
                 self.pushInput(message.decode())
                 self.inputLock.release()
-                
+        #fixes port changing issue        
         conn.close()            
     
     def pushInput(self, message):
@@ -75,8 +75,18 @@ class MotorActuator(Thread):
         #So far, this only does forward/reverse on one motor
         while True:
             self.inputLock.acquire(blocking=True, timeout=-1)
-            print("LY: " + str(self.inputMap["LY"]))
-            self.motor5.throttle(self.inputMap["LY"]*1.0,0.08)
+            #print("LY: " + str(self.inputMap["LY"]))
+            self.motor5.throttle(self.inputMap["LY"]*1.0,0.08, 5)
+            #print("D up: " + str(self.inputMap["D_Up"]))
+            
+        
+            #If D pad is pressed up, all 4 motors turn on
+            #if (self.inputMap["D_Up"] == 1):
+            self.motor1.throttle(self.inputMap["D_Up"]*1.0,0.08, 1)
+
+            #If D pad is pressed down, all 4 motors turn on in reverse
+            #if (self.inputMap["D_Down"] == 1):
+            self.motor1.throttle(self.inputMap["D_Down"]*-1.0,0.08, 1)
                 
             self.inputLock.release()
             time.sleep(0.8)#keeping the delay high for testing for now
@@ -96,5 +106,8 @@ class MotorActuator(Thread):
             kit.motor2.throttle = 0.0
             kit.motor3.throttle = 0.0
             kit.motor4.throttle = 0.0
+#        for kit1 in args:
+#            kit1.motor5.throttle = 0.0
+#            kit1.motor6.throttle = 0.0
     
             
