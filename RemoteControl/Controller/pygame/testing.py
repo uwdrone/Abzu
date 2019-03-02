@@ -6,8 +6,8 @@ import signal
 def handler(signum, frame):
     s.close()
 
-HOST = '192.168.1.101' # Enter IP or Hostname of your server
-PORT = 12349 # Pick an open Port (1000+ recommended), must match the server port
+HOST = '192.168.1.100' # Enter IP or Hostname of your server
+PORT = 12354 # Pick an open Port (1000+ recommended), must match the server port
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.connect((HOST,PORT))
 signal.signal(signal.SIGINT, handler)
@@ -76,7 +76,7 @@ while loopQuit == False:
     outstr1 = ""
     #for i in range(0,5):
     for i in [x for x in range(5) if x != 2]:
-        axis = joystick.get_axis(i)
+        axis = round(joystick.get_axis(i), 1)
         axis_name = axis_dict[i]
         outstr1 = outstr1 + axis_name + ":" + str(axis) + "|"
       #  outstr = outstr + str(i) + ":" + str(axis) + "|"
@@ -94,7 +94,7 @@ while loopQuit == False:
         button_name = button_dict[i]
         #outstr = outstr + str(i) + ":" + str(button) + "|"
         if i == numbuttons-1:
-            outstr2 = outstr2 + button_name + ":" + str(button)
+            outstr2 = outstr2 + button_name + ":" + str(button) + "|"
         else:
             outstr2 = outstr2 + button_name + ":" + str(button) + "|"
     #print("Button values:")
@@ -130,6 +130,6 @@ while loopQuit == False:
            pass
 
 
-    time.sleep(0.01)
+    time.sleep(0.5)
 pygame.quit()
 sys.exit()
