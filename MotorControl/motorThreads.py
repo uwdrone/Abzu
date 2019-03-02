@@ -41,8 +41,8 @@ class MotorActuator(Thread):
                 self.readLock.wait()
             self.inputMonitor["readers"] += 1
             
-            print("LY: " + str(self.inputMap["LY"]))
-            self.motor5.throttle(self.inputMap["LY"]*1.0,0.08)
+            #print("LY: " + str(self.inputMap["LY"]))
+            self.motor2.throttle(self.inputMap["LY"]*-1.0,0.03)
 
             self.inputMonitor["readers"] -= 1
             if self.inputMonitor["pendingWriters"] > 0:

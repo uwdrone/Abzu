@@ -10,21 +10,21 @@ class ControllerReceiver(Thread):
         self.writeLock = inputMonitor["writeLock"]
         self.readLock = inputMonitor["readLock"]
         
-        self.HOST = '192.168.1.101' #Server IP
-        self.PORT = 12348 #TCP Port
+        self.HOST = '192.168.1.100' #Server IP
+        self.PORT = 12354 #TCP Port
         self.sock = socket
 
     def run(self):
         self.receiveUserMotorCommands()
     
     def receiveUserMotorCommands(self):
-        print("This is the motor command thread\n")
+        print("This is the rc command thread\n")
         #managing error exception
         try:
             self.sock.bind((self.HOST, self.PORT))
-        except socket.error:
-            print("bind failed")
-            self.sock.close()
+        except socket.error as e:
+            print(e)
+            
             return
             
         self.sock.listen(2)
@@ -34,16 +34,16 @@ class ControllerReceiver(Thread):
         print("Connected")
         
         while True:
-            message = conn.recv(4096)
+            message = conn.recv(256)
 
             self.writeLock.acquire(blocking=True, timeout=-1)
             self.inputMonitor["pendingWriters"] += 1
             
-            while self.inputMonitor["readerCount"] > 0:
+            while self.inputMonitor["readers"] > 0:
                 self.writeLock.wait()     
             self.inputMonitor["writers"] = 1
             
-            #print("pushing commands")
+            #print(message.decode())
             self.pushInput(message.decode())
 
 
@@ -63,4 +63,7 @@ class ControllerReceiver(Thread):
         for item in lst:
             kvp = item.split(':')
             #print("{}".format(kvp))
-            self.inputMap[kvp[0]] = float(kvp[1])
+            try:
+                self.inputMap[kvp[0]] = float(kvp[1])
+            except:
+                return
