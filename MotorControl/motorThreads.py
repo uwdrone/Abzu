@@ -2,67 +2,29 @@ from threading import Thread
 from .motor import Motor
 from adafruit_motorkit import MotorKit
 import time
-import socket
-
-class MotorCommandsReceiver(Thread):
-    def __init__(self, inputMap, inputLock, socket):
-        Thread.__init__(self)
-        self.inputMap = inputMap
-        self.inputLock = inputLock
-        self.HOST = '192.168.1.101' #Server IP
-        self.PORT = 12659 #TCP Port
-        self.sock = socket
-
-    def run(self):
-        self.receiveUserMotorCommands()
-    
-    def receiveUserMotorCommands(self):
-        print("This is the motor command thread\n")
-        #managing error exception
-        try:
-            self.sock.bind((self.HOST, self.PORT))
-        except socket.error:
-            print("bind failed")
-            self.sock.close()
-            
-        self.sock.listen(2)
-        print("Socket awaiting connections")
-
-        (conn, addr) = self.sock.accept()
-        print("Connected")
-        
-        while True:
-            message = conn.recv(4096)
-            
-            if self.inputLock.acquire(blocking=False)==True:
-                #print("pushing commands")
-                self.pushInput(message.decode())
-                self.inputLock.release()
-        #fixes port changing issue        
-        conn.close()            
-    
-    def pushInput(self, message):
-        lst = message.split('|')
-        #print("{}".format(lst))
-        for item in lst:
-            kvp = item.split(':')
-            #print("{}".format(kvp))
-            self.inputMap[kvp[0]] = float(kvp[1])
-            
+import socket            
 
 class MotorActuator(Thread):
-    def __init__(self, inputMap, inputLock, imuLock=None, imuData=None):
+    def __init__(self, inputMonitor, imuLock=None, imuData=None):
         Thread.__init__(self)
-        self.inputMap = inputMap
-        self.inputLock = inputLock
+        self.inputMap = inputMonitor["inputMap"]
+        self.readLock = inputMonitor["readLock"]
+        self.writeLock = inputMonitor["writeLock"]
+        self.inputMonitor = inputMonitor
         
         self.imuLock = imuLock
         self.imuData = imuData
         
         self.kit = MotorKit()
         self.kit1 = MotorKit(0x61)
-        self.initMotorKits(self.kit, self.kit1)
-        self.kit1.motor1.throttle = 0.0
+        self.initMotorKits()
+
+        self.motor1 = None
+        self.motor2 = None
+        self.motor3 = None
+        self.motor4 = None
+        self.motor5 = None
+        self.motor6 = None
         self.initMotors()
 
     def run(self):
@@ -74,21 +36,21 @@ class MotorActuator(Thread):
         #for each motor depending on user/imu input "resolveVector" func or something
         #So far, this only does forward/reverse on one motor
         while True:
-            self.inputLock.acquire(blocking=True, timeout=-1)
-            #print("LY: " + str(self.inputMap["LY"]))
-            self.motor5.throttle(self.inputMap["LY"]*1.0,0.08, 5)
-            #print("D up: " + str(self.inputMap["D_Up"]))
+            self.readLock.acquire(blocking=True, timeout=-1)
+            while self.inputMonitor["writers"]>0 or self.inputMonitor["pendingWriters"]>0:
+                self.readLock.wait()
+            self.inputMonitor["readers"] += 1
             
-        
-            #If D pad is pressed up, all 4 motors turn on
-            #if (self.inputMap["D_Up"] == 1):
-            self.motor1.throttle(self.inputMap["D_Up"]*1.0,0.08, 1)
+            print("LY: " + str(self.inputMap["LY"]))
+            self.motor5.throttle(self.inputMap["LY"]*1.0,0.08)
 
-            #If D pad is pressed down, all 4 motors turn on in reverse
-            #if (self.inputMap["D_Down"] == 1):
-            self.motor1.throttle(self.inputMap["D_Down"]*-1.0,0.08, 1)
-                
-            self.inputLock.release()
+            self.inputMonitor["readers"] -= 1
+            if self.inputMonitor["pendingWriters"] > 0:
+                self.writeLock.notify_all()
+            else:
+                self.readLock.notify_all()
+            self.readLock.release()
+            
             time.sleep(0.8)#keeping the delay high for testing for now
 
     def initMotors(self):
@@ -100,14 +62,14 @@ class MotorActuator(Thread):
         self.motor5 = Motor(self.kit1, 1, 0.0) #forward thrust 1
         self.motor6 = Motor(self.kit1, 2, 0.0) #forward thrust 2
 
-    def initMotorKits(self, *args):
-        for kit in args:
-            kit.motor1.throttle = 0.0
-            kit.motor2.throttle = 0.0
-            kit.motor3.throttle = 0.0
-            kit.motor4.throttle = 0.0
-#        for kit1 in args:
-#            kit1.motor5.throttle = 0.0
-#            kit1.motor6.throttle = 0.0
+    def initMotorKits(self):
+        self.kit.motor1.throttle = 0.0
+        self.kit.motor2.throttle = 0.0
+        self.kit.motor3.throttle = 0.0
+        self.kit.motor4.throttle = 0.0
+
+        
+        self.kit1.motor1.throttle = 0.0
+        self.kit1.motor2.throttle = 0.0
     
             

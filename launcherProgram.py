@@ -1,5 +1,7 @@
 from MotorControl.motorThreads import *
+from RemoteControl.ControllerReceiver import *
 from threading import Lock
+from threading import Condition
 import signal
 import socket
 
@@ -27,7 +29,24 @@ inputMap = {
         "D_Right": 0.0
     }
 
-inputLock = Lock()
+inputMutex = Lock()
+readers = 0
+pendingWriters = 0
+writers = 0
+readLock = Condition(inputMutex)
+writeLock = Condition(inputMutex)
+
+inputMonitor = {
+    "mutex": inputMutex,
+    "readers": 0,
+    "writers": 0,
+    "pendingWriters": 0,
+    "inputMap": inputMap,
+    "readLock": readLock,
+    "writeLock": writeLock
+    }
+
+
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
@@ -38,10 +57,10 @@ signal.signal(signal.SIGTERM, handler)
 
 def launcher():
     print("Commencing Launcher\n")
-    mActr = MotorActuator(inputMap, inputLock)
+    mActr = MotorActuator(inputMonitor)
     mActr.start()
-    mCRcvr = MotorCommandsReceiver(inputMap, inputLock, sock)
-    mCRcvr.start()
+    rcRcvr = ControllerReceiver(inputMonitor, sock)
+    rcRcvr.start()
 
 if __name__=='__main__':
     launcher();
