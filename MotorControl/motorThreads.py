@@ -27,32 +27,6 @@ class MotorActuator(Thread):
         self.motor6 = None
         self.initMotors()
 
-    def run(self):
-        self.actuateMotors()
-
-    def actuateMotors(self):
-        print("This is the actuate motors thread\n")
-        #To Do: Include IMU vector into actuation, and calculate a value for
-        #for each motor depending on user/imu input "resolveVector" func or something
-        #So far, this only does forward/reverse on one motor
-        while True:
-            self.readLock.acquire(blocking=True, timeout=-1)
-            while self.inputMonitor["writers"]>0 or self.inputMonitor["pendingWriters"]>0:
-                self.readLock.wait()
-            self.inputMonitor["readers"] += 1
-            
-            #print("LY: " + str(self.inputMap["LY"]))
-            self.motor2.throttle(self.inputMap["LY"]*-1.0,0.03)
-
-            self.inputMonitor["readers"] -= 1
-            if self.inputMonitor["pendingWriters"] > 0:
-                self.writeLock.notify_all()
-            else:
-                self.readLock.notify_all()
-            self.readLock.release()
-            
-            time.sleep(0.8)#keeping the delay high for testing for now
-
     def initMotors(self):
         self.motor1 = Motor(self.kit, 1, 0.0) #attitude 1
         self.motor2 = Motor(self.kit, 2, 0.0) #attitude 2
@@ -71,5 +45,58 @@ class MotorActuator(Thread):
         
         self.kit1.motor1.throttle = 0.0
         self.kit1.motor2.throttle = 0.0
+
+    def run(self):
+        self.actuateMotors()
+
+    def actuateMotors(self):
+        print("This is the actuate motors thread\n")
+        #To Do: Include IMU vector into actuation, and calculate a value for
+        #for each motor depending on user/imu input "resolveVector" func or something
+        #So far, this only does forward/reverse on one motor
+        while True:
+            self.readLock.acquire(blocking=True, timeout=-1)
+            while self.inputMonitor["writers"]>0 or self.inputMonitor["pendingWriters"]>0:
+                self.readLock.wait()
+            self.inputMonitor["readers"] += 1
+            
+            self.depth()
+            self.skid()
+
+            self.inputMonitor["readers"] -= 1
+            if self.inputMonitor["pendingWriters"] > 0:
+                self.writeLock.notify_all()
+            else:
+                self.readLock.notify_all()
+            self.readLock.release()
+            
+            time.sleep(0.8)#keeping the delay high for testing for now
+
+    def skid(self):
+        pass
+
+    def depth(self):
+        if self.inputMap["D_Up"] == 1.0:
+            self.ascend()
+        elif self.inputMap["D_Down"] == 1.0:
+            self.descend()
+        else:
+            #this section will change when we get IMU vector
+            self.motor1.throttle(0.0, 0.01)
+            self.motor2.throttle(0.0, 0.01)
+            self.motor3.throttle(0.0, 0.01)
+            self.motor5.throttle(0.0, 0.01)
+
+    def ascend(self):
+        self.motor1.throttle(1.0, 0.01)
+        self.motor2.throttle(1.0, 0.01)
+        self.motor3.throttle(1.0, 0.01)
+        self.motor5.throttle(1.0, 0.01)
+
+    def descend(self):
+        self.motor1.throttle(-1.0, 0.01)
+        self.motor2.throttle(-1.0, 0.01)
+        self.motor3.throttle(-1.0, 0.01)
+        self.motor5.throttle(-1.0, 0.01)
     
             

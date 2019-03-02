@@ -22,6 +22,7 @@ class Motor:
         difference = value - self.prevThrottle
         
         if difference == 0:
+            print("SAME VALUE NO THROTTLING")
             return
         
         step = round(difference/(abs(difference)*32), 2)
