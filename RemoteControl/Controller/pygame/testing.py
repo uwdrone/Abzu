@@ -1,5 +1,17 @@
 import pygame, sys, time    #Imports Modules
 from pygame.locals import *
+import socket
+import signal
+
+def handler(signum, frame):
+    s.close()
+
+HOST = '192.168.1.100' # Enter IP or Hostname of your server
+PORT = 12354 # Pick an open Port (1000+ recommended), must match the server port
+s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+s.connect((HOST,PORT))
+signal.signal(signal.SIGINT, handler)
+signal.signal(signal.SIGTERM, handler)
 
 pygame.init()#Initializes Pygame
 pygame.joystick.init()
@@ -23,25 +35,80 @@ print("numbuttons")
 print(numbuttons)
 print("--------------")
 
+
+button_dict = {
+    0  : "x_button",
+    1  : "circle",
+    2  : "triangle",
+    3  : "square",
+    4  : "L1",
+    5  : "R1",
+    6  : "L2",
+    7  : "R2",
+    8  : "Select",
+    9  : "Start",
+    10 : "PS_Button",
+    11 : "L3",
+    12 : "R3",
+    13 : "D_Up",
+    14 : "D_Down",
+    15 : "D_Left",
+    16 : "D_Right"
+}
+
+axis_dict = {
+    0 : "LX",
+    1 : "LY",
+    3 : "RX",
+    4 : "RY",
+}
+
+
+
 loopQuit = False
 while loopQuit == False:
 
+    #Left Joystick  - X Axis - Axis 0
+    #               - Y Axis - Axis 1
+    #Right Joystick - X Axis - Axis 3
+    #               - Y Axis - Axis 4
     # test joystick axes and prints values
-    outstr = ""
-    for i in range(0,4):
-        axis = joystick.get_axis(i)
-        outstr = outstr + str(i) + ":" + str(axis) + "|"
-        print("Joystick axis and values:")
-        print(outstr)
+    outstr1 = ""
+    #for i in range(0,5):
+    for i in [x for x in range(5) if x != 2]:
+        axis = round(joystick.get_axis(i), 1)
+        axis_name = axis_dict[i]
+        outstr1 = outstr1 + axis_name + ":" + str(axis) + "|"
+      #  outstr = outstr + str(i) + ":" + str(axis) + "|"
+    #print("Joystick axis and values:")
+    #print(outstr1)
 
     # test controller buttons
-    outstr = ""
+    outstr2 = ""
     for i in range(0,numbuttons):
-           button = joystick.get_button(i)
-           outstr = outstr + str(i) + ":" + str(button) + "|"
-    print("Button values:")
-    print(outstr)
+        #if i in button_dict:
+        #name = button_dict[i]
+        #print(name)
+        #else:
+        button = joystick.get_button(i)
+        button_name = button_dict[i]
+        #outstr = outstr + str(i) + ":" + str(button) + "|"
+        if i == numbuttons-1:
+            outstr2 = outstr2 + button_name + ":" + str(button) + "|"
+        else:
+            outstr2 = outstr2 + button_name + ":" + str(button) + "|"
+    #print("Button values:")
+    #print(outstr2)
 
+    outstr3 = "".join((outstr1, outstr2))
+    print(outstr3)
+    
+    
+    s.send(outstr3.encode())
+    #reply = s.recv(1024)
+    #if reply == 'Terminate':
+     #   break
+    
     for event in pygame.event.get():
        if event.type == QUIT:
            loopQuit = True
@@ -60,7 +127,9 @@ while loopQuit == False:
        # dominates events when used
        if event.type == pygame.JOYAXISMOTION:
            # print("joy axis motion")
+           pass
 
-    time.sleep(0.01)
+
+    time.sleep(0.5)
 pygame.quit()
 sys.exit()
