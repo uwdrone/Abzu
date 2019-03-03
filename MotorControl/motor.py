@@ -25,26 +25,31 @@ class Motor:
             print("SAME VALUE NO THROTTLING")
             return
         
-        step = round(difference/(abs(difference)*32), 2)
+        step = round(difference/(abs(difference)*1), 2)
 
         print("Difference      " + str(difference))
         print("Step " + str(step))
         
         temp = self.prevThrottle
+        self.motorFunction.throttle = value
+        self.prevThrottle = value
         
-        while(temp != value):
-            print("Acceleration " + str(temp))
-            
-            temp = self.prevThrottle + step
-            if temp > value-step and step > 0.0:
-                self.prevThrottle = value
-                break
-            elif temp < value-step and step < 0.0:
-                self.prevThrottle = value
-                break
-            else:
-                self.prevThrottle = temp
-                self.motorFunction.throttle = temp
-                time.sleep(delay)
+##        while(temp != value):
+##            print("Acceleration " + str(self.prevThrottle))
+##            
+##            temp = self.prevThrottle + step
+##            if temp > value-step and step > 0.0:
+##                self.prevThrottle = value
+##                break
+##            elif temp < value-step and step < 0.0:
+##                self.prevThrottle = value
+##                break
+##            else:
+##                self.prevThrottle = temp
+##                #try:
+##                self.motorFunction.throttle = temp
+##                #except:
+##                #    return
+##                #time.sleep(delay)
         
         

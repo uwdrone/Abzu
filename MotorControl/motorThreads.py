@@ -53,11 +53,13 @@ class MotorActuator(Thread):
         print("This is the actuate motors thread\n")
         #To Do: Include IMU vector into actuation, and calculate a value for
         #for each motor depending on user/imu input "resolveVector" func or something
-        #So far, this only does forward/reverse on one motor
+        
         while True:
             self.readLock.acquire(blocking=True, timeout=-1)
-            while self.inputMonitor["writers"]>0 or self.inputMonitor["pendingWriters"]>0:
-                self.readLock.wait()
+            self.inputMonitor["pendingReaders"] += 1
+            self.readLock.wait()
+            
+            self.inputMonitor["pendingReaders"] -= 1
             self.inputMonitor["readers"] += 1
             
             self.depth()
@@ -66,11 +68,10 @@ class MotorActuator(Thread):
             self.inputMonitor["readers"] -= 1
             if self.inputMonitor["pendingWriters"] > 0:
                 self.writeLock.notify_all()
-            else:
+            if self.inputMonitor["pendingReaders"]>0 or self.inputMonitor["readers"]>0:
                 self.readLock.notify_all()
             self.readLock.release()
             
-            time.sleep(0.8)#keeping the delay high for testing for now
 
     def skid(self):
         pass

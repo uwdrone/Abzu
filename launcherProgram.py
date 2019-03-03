@@ -4,6 +4,7 @@ from threading import Lock
 from threading import Condition
 import signal
 import socket
+import time
 
 inputMap = {
         "LX": 0.0,
@@ -41,6 +42,7 @@ inputMonitor = {
     "readers": 0,
     "writers": 0,
     "pendingWriters": 0,
+    "pendingReaders": 0,
     "inputMap": inputMap,
     "readLock": readLock,
     "writeLock": writeLock
@@ -57,10 +59,9 @@ signal.signal(signal.SIGTERM, handler)
 
 def launcher():
     print("Commencing Launcher\n")
-    mActr = MotorActuator(inputMonitor)
-    mActr.start()
     rcRcvr = ControllerReceiver(inputMonitor, sock)
     rcRcvr.start()
-
+    mActr = MotorActuator(inputMonitor)
+    mActr.start()
 if __name__=='__main__':
     launcher();

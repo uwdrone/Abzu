@@ -7,7 +7,7 @@ def handler(signum, frame):
     s.close()
 
 HOST = '192.168.1.100' # Enter IP or Hostname of your server
-PORT = 12354 # Pick an open Port (1000+ recommended), must match the server port
+PORT = 12355 # Pick an open Port (1000+ recommended), must match the server port
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.connect((HOST,PORT))
 signal.signal(signal.SIGINT, handler)
@@ -64,7 +64,7 @@ axis_dict = {
 }
 
 
-
+prevstr = str()
 loopQuit = False
 while loopQuit == False:
 
@@ -101,13 +101,12 @@ while loopQuit == False:
     #print(outstr2)
 
     outstr3 = "".join((outstr1, outstr2))
-    print(outstr3)
     
-    
-    s.send(outstr3.encode())
-    #reply = s.recv(1024)
-    #if reply == 'Terminate':
-     #   break
+    if outstr3 != prevstr:
+        prevstr = outstr3
+        print(outstr3)
+        s.send(outstr3.encode())
+   
     
     for event in pygame.event.get():
        if event.type == QUIT:
@@ -130,6 +129,6 @@ while loopQuit == False:
            pass
 
 
-    time.sleep(0.5)
+    time.sleep(0.04)
 pygame.quit()
 sys.exit()
