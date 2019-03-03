@@ -11,6 +11,12 @@ import socketserver
 from threading import Condition
 from http import server
 
+#import socket
+#HOST = '192.168.1.101' # Enter IP or Hostname of your server
+#PORT = 12345 # Pick an open Port (1000+ recommended), must match the server port
+#s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+#s.connect((HOST,PORT))
+
 PAGE= """\
 <html>
 <head>
@@ -89,6 +95,7 @@ with picamera.PiCamera(resolution='640x480', framerate=24) as camera:
     #camera.rotation = 90
     camera.start_recording(output, format='mjpeg')
     try:
+#        s.send(output)
         TCP_IP = '192.168.1.191'
         address = ('', 8000)
         server = StreamingServer(address, StreamingHandler)
