@@ -1,4 +1,5 @@
 from threading import Thread
+from picamera import PiCamera
 import time
 
 class VideoRecorder(Thread):
@@ -10,6 +11,8 @@ class VideoRecorder(Thread):
         self.inputMonitor = inputMonitor
         self.triangle = None
         self.recording = False
+        self.camera = PiCamera()
+        self.vid_count = 1
 
     def run(self):
         self.recordVideo()
@@ -35,5 +38,11 @@ class VideoRecorder(Thread):
             self.readLock.release()
 
             if self.triangle == 1:
-                #do things
-                pass
+                if self.recording == True:
+                    self.camera.stop_recording()
+                    self.recording = False
+                else:
+                    self.camera.start_recording('/home/pi/Desktop/VideoRecordings/video' + str(self.vid_count) + '.h264')
+                    self.vid_count += 1
+                    self.recording = True
+                
