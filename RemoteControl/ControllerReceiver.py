@@ -10,8 +10,8 @@ class ControllerReceiver(Thread):
         self.writeLock = inputMonitor["writeLock"]
         self.readLock = inputMonitor["readLock"]
         
-        self.HOST = '192.168.1.100' #Server IP
-        self.PORT = 12355 #TCP Port
+        self.HOST = '192.168.1.101' #Server IP
+        self.PORT = 12346 #TCP Port
         self.sock = socket
 
     def run(self):
@@ -34,7 +34,7 @@ class ControllerReceiver(Thread):
         print("Connected")
         
         while True:
-            print("server polling")
+            #print("server polling")
             message = conn.recv(256)
 
             self.writeLock.acquire(blocking=True, timeout=-1)

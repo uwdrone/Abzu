@@ -1,5 +1,6 @@
 from MotorControl.motorThreads import *
 from RemoteControl.ControllerReceiver import *
+from CameraControl.Record import *
 from threading import Lock
 from threading import Condition
 import signal
@@ -63,5 +64,7 @@ def launcher():
     rcRcvr.start()
     mActr = MotorActuator(inputMonitor)
     mActr.start()
+    camCorder = VideoRecorder(inputMonitor)
+    camCorder.start()
 if __name__=='__main__':
     launcher();

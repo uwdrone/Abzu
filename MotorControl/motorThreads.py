@@ -2,7 +2,8 @@ from threading import Thread
 from .motor import Motor
 from adafruit_motorkit import MotorKit
 import time
-import socket            
+import socket
+import math
 
 class MotorActuator(Thread):
     def __init__(self, inputMonitor, imuLock=None, imuData=None):
@@ -68,13 +69,109 @@ class MotorActuator(Thread):
             self.inputMonitor["readers"] -= 1
             if self.inputMonitor["pendingWriters"] > 0:
                 self.writeLock.notify_all()
-            if self.inputMonitor["pendingReaders"]>0 or self.inputMonitor["readers"]>0:
+            elif self.inputMonitor["pendingReaders"]>0 or self.inputMonitor["readers"]>0:
                 self.readLock.notify_all()
+            else:
+                pass
             self.readLock.release()
             
 
     def skid(self):
-        pass
+        LX = self.inputMap["LX"]
+        LY = -1*self.inputMap["LY"]
+        #print("LX: " + str(LX))
+        #print("LY: " + str(LY))
+
+        theta = float()
+        
+        if LX == 0.0 and LY == 0.0:
+            print("Throttle off")
+            self.motor1.throttle(0.0, 0.01)
+            self.motor2.throttle(0.0, 0.01)
+            return
+        
+        if LX == 0.0:
+            if LY > 0.0:
+                theta = math.radians(90.0)
+            if LY < 0.0:
+                theta = math.radians(270.0)
+            
+            H = abs(LY/math.sin(theta))
+            
+        elif LY == 0.0:
+            if LX > 0.0:
+                theta = math.radians(0.0)
+            if LX < 0.0:
+                theta = math.radians(180.0)
+
+            H = abs(LX/math.cos(theta))
+            
+        else:
+            theta = math.atan(abs(LY/LX))
+            H = abs(LX/math.cos(theta))
+
+        h = H - 1
+        if h <= 0.0:
+            x = LX
+            y = LY 
+        else:
+            if LX < 0.0:
+                x = -1.0*(abs(LX) - h*math.cos(theta))
+            else:
+                x = LX - h*math.cos(theta)
+            if LY < 0.0:
+                y = -1.0*(abs(LY) - h*math.sin(theta))
+            else:
+                y = LY - h*math.sin(theta)
+        
+        #print("Theta: " + str(math.degrees(theta)))
+        #print("X: " + str(x))
+        #print("Y: " + str(y))
+
+        magnitude = round(math.sqrt(y*y + x*x), 1)
+        #print("Magnitude: " + str(magnitude))
+        if x > 0.0:
+            #Right two quadrants
+            self.motor2.throttle(round(y*x, 1), 0.01)
+            if y > 0.0:
+                self.motor1.throttle(magnitude, 0.01)
+                print("Up-Right")
+                print("Motor1: " + str(magnitude))
+                print("Motor2: " + str(round(y*x, 1)))
+            if y < 0.0:
+                self.motor1.throttle(-1.0*magnitude, 0.01)
+                print("Down-Right")
+                print("Motor1: " + str(magnitude))
+                print("Motor2: " + str(round(y*x, 1)))
+            else:
+                self.motor1.throttle(0.0, 0.01)
+                self.motor2.throttle(magnitude, 0.01)
+                print("Right")
+                print("Motor2: " + str(magnitude))
+        if x < 0.0:
+            #Left two quadrants
+            self.motor1.throttle(round(y*x, 1), 0.01)
+            if y > 0.0:
+                self.motor2.throttle(magnitude, 0.01)
+                print("Up-Left")
+                print("Motor1: " + str(magnitude))
+                print("Motor2: " + str(round(y*x, 1)))
+            if y < 0.0:
+                self.motor2.throttle(-1.0*magnitude, 0.01)
+                print("Down-Left")
+                print("Motor1: " + str(magnitude))
+                print("Motor2: " + str(round(y*x, 1)))
+            else:
+                self.motor2.throttle(0.0, 0.01)
+                self.motor1.throttle(magnitude, 0.01)
+                print("Left")
+                print("Motor1: " + str(magnitude))
+        else:
+            print("Straight")
+            self.motor1.throttle(round(y, 1), 0.01)
+            self.motor2.throttle(round(y, 1), 0.01)
+        
+        
 
     def depth(self):
         if self.inputMap["D_Up"] == 1.0:
@@ -83,20 +180,20 @@ class MotorActuator(Thread):
             self.descend()
         else:
             #this section will change when we get IMU vector
-            self.motor1.throttle(0.0, 0.01)
-            self.motor2.throttle(0.0, 0.01)
+            #self.motor1.throttle(0.0, 0.01)
+            #self.motor2.throttle(0.0, 0.01)
             self.motor3.throttle(0.0, 0.01)
             self.motor5.throttle(0.0, 0.01)
 
     def ascend(self):
-        self.motor1.throttle(1.0, 0.01)
-        self.motor2.throttle(1.0, 0.01)
+        #self.motor1.throttle(1.0, 0.01)
+        #self.motor2.throttle(1.0, 0.01)
         self.motor3.throttle(1.0, 0.01)
         self.motor5.throttle(1.0, 0.01)
 
     def descend(self):
-        self.motor1.throttle(-1.0, 0.01)
-        self.motor2.throttle(-1.0, 0.01)
+        #self.motor1.throttle(-1.0, 0.01)
+        #self.motor2.throttle(-1.0, 0.01)
         self.motor3.throttle(-1.0, 0.01)
         self.motor5.throttle(-1.0, 0.01)
     
