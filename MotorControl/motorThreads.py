@@ -90,7 +90,7 @@ class MotorActuator(Thread):
             self.motor2.throttle(0.0, 0.01)
             return
         
-        if LX == 0.0:
+        elif LX == 0.0:
             if LY > 0.0:
                 theta = math.radians(90.0)
             if LY < 0.0:
@@ -132,40 +132,40 @@ class MotorActuator(Thread):
         #print("Magnitude: " + str(magnitude))
         if x > 0.0:
             #Right two quadrants
-            self.motor2.throttle(round(y*x, 1), 0.01)
+            self.motor2.throttle(round(y*(1-x), 1), 0.01)
             if y > 0.0:
                 self.motor1.throttle(magnitude, 0.01)
                 print("Up-Right")
                 print("Motor1: " + str(magnitude))
-                print("Motor2: " + str(round(y*x, 1)))
-            if y < 0.0:
+                print("Motor2: " + str(round(y*(1-x), 1)))
+            elif y < 0.0:
                 self.motor1.throttle(-1.0*magnitude, 0.01)
                 print("Down-Right")
                 print("Motor1: " + str(magnitude))
-                print("Motor2: " + str(round(y*x, 1)))
-            else:
-                self.motor1.throttle(0.0, 0.01)
-                self.motor2.throttle(magnitude, 0.01)
-                print("Right")
-                print("Motor2: " + str(magnitude))
-        if x < 0.0:
-            #Left two quadrants
-            self.motor1.throttle(round(y*x, 1), 0.01)
-            if y > 0.0:
-                self.motor2.throttle(magnitude, 0.01)
-                print("Up-Left")
-                print("Motor1: " + str(magnitude))
-                print("Motor2: " + str(round(y*x, 1)))
-            if y < 0.0:
-                self.motor2.throttle(-1.0*magnitude, 0.01)
-                print("Down-Left")
-                print("Motor1: " + str(magnitude))
-                print("Motor2: " + str(round(y*x, 1)))
+                print("Motor2: " + str(round(y*(1-x), 1)))
             else:
                 self.motor2.throttle(0.0, 0.01)
                 self.motor1.throttle(magnitude, 0.01)
-                print("Left")
+                print("Right")
                 print("Motor1: " + str(magnitude))
+        elif x < 0.0:
+            #Left two quadrants
+            self.motor1.throttle(round(y*abs(-1-x), 1), 0.01)
+            if y > 0.0:
+                self.motor2.throttle(magnitude, 0.01)
+                print("Up-Left")
+                print("Motor1: " + str(round(y*abs(-1-x), 1)))
+                print("Motor2: " + str(magnitude))
+            elif y < 0.0:
+                self.motor2.throttle(-1.0*magnitude, 0.01)
+                print("Down-Left")
+                print("Motor1: " + str(round(y*abs(-1-x), 1)))
+                print("Motor2: " + str(-1.0*magnitude))
+            else:
+                self.motor1.throttle(0.0, 0.01)
+                self.motor2.throttle(magnitude, 0.01)
+                print("Left")
+                print("Motor2: " + str(magnitude))
         else:
             print("Straight")
             self.motor1.throttle(round(y, 1), 0.01)
