@@ -34,6 +34,7 @@ class StreamingOutput(object):
         self.frame = None
         self.buffer = io.BytesIO()
         self.condition = Condition()
+        self.output_file = io.open('/home/pi/Desktop/VideoRecordings/testfile.h264', 'wb')
 
     def write(self, buf):
         if buf.startswith(b'\xff\xd8'):

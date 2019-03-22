@@ -10,7 +10,7 @@ class ControllerReceiver(Thread):
         self.writeLock = inputMonitor["writeLock"]
         self.readLock = inputMonitor["readLock"]
         
-        self.HOST = '192.168.1.101' #Server IP
+        self.HOST = '192.168.1.100' #Server IP
         self.PORT = 12346 #TCP Port
         self.sock = socket
 
