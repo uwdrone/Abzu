@@ -12,6 +12,8 @@ class MotorActuator(Thread):
         self.readLock = inputMonitor["readLock"]
         self.writeLock = inputMonitor["writeLock"]
         self.inputMonitor = inputMonitor
+
+        self.localInputMap = dict()
         
         self.imuLock = imuLock
         self.imuData = imuData
@@ -62,9 +64,8 @@ class MotorActuator(Thread):
             
             self.inputMonitor["pendingReaders"] -= 1
             self.inputMonitor["readers"] += 1
-            
-            self.depth()
-            self.skid()
+
+            self.copyInput()
 
             self.inputMonitor["readers"] -= 1
             if self.inputMonitor["pendingWriters"] > 0:
@@ -74,6 +75,10 @@ class MotorActuator(Thread):
             else:
                 pass
             self.readLock.release()
+
+            #actuate
+            #self.depth()
+            self.skid()
             
 
     def skid(self):
@@ -86,8 +91,8 @@ class MotorActuator(Thread):
         
         if LX == 0.0 and LY == 0.0:
             print("Throttle off")
-            self.motor1.throttle(0.0, 0.01)
-            self.motor2.throttle(0.0, 0.01)
+            self.motor5.throttle(0.0, 0.01)
+            self.motor6.throttle(0.0, 0.01)
             return
         
         elif LX == 0.0:
@@ -132,44 +137,44 @@ class MotorActuator(Thread):
         #print("Magnitude: " + str(magnitude))
         if x > 0.0:
             #Right two quadrants
-            self.motor2.throttle(round(y*(1-x), 1), 0.01)
+            self.motor5.throttle(round(y*(1-x), 1), 0.01)
             if y > 0.0:
-                self.motor1.throttle(magnitude, 0.01)
+                self.motor6.throttle(magnitude, 0.01)
                 print("Up-Right")
                 print("Motor1: " + str(magnitude))
                 print("Motor2: " + str(round(y*(1-x), 1)))
             elif y < 0.0:
-                self.motor1.throttle(-1.0*magnitude, 0.01)
+                self.motor6.throttle(-1.0*magnitude, 0.01)
                 print("Down-Right")
                 print("Motor1: " + str(magnitude))
                 print("Motor2: " + str(round(y*(1-x), 1)))
             else:
-                self.motor2.throttle(0.0, 0.01)
-                self.motor1.throttle(magnitude, 0.01)
+                self.motor5.throttle(0.0, 0.01)
+                self.motor6.throttle(magnitude, 0.01)
                 print("Right")
                 print("Motor1: " + str(magnitude))
         elif x < 0.0:
             #Left two quadrants
-            self.motor1.throttle(round(y*abs(-1-x), 1), 0.01)
+            self.motor6.throttle(round(y*abs(-1-x), 1), 0.01)
             if y > 0.0:
-                self.motor2.throttle(magnitude, 0.01)
+                self.motor5.throttle(magnitude, 0.01)
                 print("Up-Left")
                 print("Motor1: " + str(round(y*abs(-1-x), 1)))
                 print("Motor2: " + str(magnitude))
             elif y < 0.0:
-                self.motor2.throttle(-1.0*magnitude, 0.01)
+                self.motor5.throttle(-1.0*magnitude, 0.01)
                 print("Down-Left")
                 print("Motor1: " + str(round(y*abs(-1-x), 1)))
                 print("Motor2: " + str(-1.0*magnitude))
             else:
-                self.motor1.throttle(0.0, 0.01)
-                self.motor2.throttle(magnitude, 0.01)
+                self.motor6.throttle(0.0, 0.01)
+                self.motor5.throttle(magnitude, 0.01)
                 print("Left")
                 print("Motor2: " + str(magnitude))
         else:
             print("Straight")
-            self.motor1.throttle(round(y, 1), 0.01)
-            self.motor2.throttle(round(y, 1), 0.01)
+            self.motor6.throttle(round(y, 1), 0.01)
+            self.motor5.throttle(round(y, 1), 0.01)
         
         
 
@@ -180,21 +185,26 @@ class MotorActuator(Thread):
             self.descend()
         else:
             #this section will change when we get IMU vector
-            #self.motor1.throttle(0.0, 0.01)
-            #self.motor2.throttle(0.0, 0.01)
+            self.motor1.throttle(0.0, 0.01)
+            self.motor2.throttle(0.0, 0.01)
             self.motor3.throttle(0.0, 0.01)
-            self.motor5.throttle(0.0, 0.01)
+            self.motor4.throttle(0.0, 0.01)
 
     def ascend(self):
-        #self.motor1.throttle(1.0, 0.01)
-        #self.motor2.throttle(1.0, 0.01)
+        self.motor1.throttle(1.0, 0.01)
+        self.motor2.throttle(1.0, 0.01)
         self.motor3.throttle(1.0, 0.01)
-        self.motor5.throttle(1.0, 0.01)
+        self.motor4.throttle(1.0, 0.01)
 
     def descend(self):
-        #self.motor1.throttle(-1.0, 0.01)
-        #self.motor2.throttle(-1.0, 0.01)
+        self.motor1.throttle(-1.0, 0.01)
+        self.motor2.throttle(-1.0, 0.01)
         self.motor3.throttle(-1.0, 0.01)
-        self.motor5.throttle(-1.0, 0.01)
+        self.motor4.throttle(-1.0, 0.01)
+
+    def copyInput(self):
+        for key, value in self.inputMap.items():
+            self.localInputMap[key] = value
+    
     
             
