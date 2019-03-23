@@ -1,6 +1,8 @@
 from MotorControl.motorThreads import *
 from RemoteControl.ControllerReceiver import *
 from CameraControl.Record import *
+from PID.Adafruit_BNO055 import BNO055
+from PID.imuPolling import *
 from threading import Lock
 from threading import Condition
 import signal
@@ -31,6 +33,13 @@ inputMap = {
         "D_Right": 0.0
     }
 
+imuData = {
+        "pitch": 0.0,
+        "roll": 0.0,
+        "heading": 0.0
+    }
+
+imuMutex = Lock()
 inputMutex = Lock()
 readers = 0
 pendingWriters = 0
@@ -46,8 +55,11 @@ inputMonitor = {
     "pendingReaders": 0,
     "inputMap": inputMap,
     "readLock": readLock,
-    "writeLock": writeLock
+    "writeLock": writeLock,
+    "imuLock": imuMutex,
+    "imuData": imuData
     }
+
 
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -62,9 +74,15 @@ def launcher():
     print("Commencing Launcher\n")
     rcRcvr = ControllerReceiver(inputMonitor, sock)
     rcRcvr.start()
+    
     mActr = MotorActuator(inputMonitor)
     mActr.start()
+    
     camCorder = VideoRecorder(inputMonitor)
     camCorder.start()
+
+    imuPoll = IMU(inputMonitor)
+    imuPoll.start()
+    
 if __name__=='__main__':
     launcher();

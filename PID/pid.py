@@ -1,7 +1,7 @@
 from threading import Thread
 import socket
 Class PID(Thread):
-    def __init__(self, inputMonitor, imuLock=None, imuData=None):
+    def __init__(self, inputMonitor):
         Thread.__init__(self)
         self.inputMap = inputMonitor["inputMap"]
         self.readLock = inputMonitor["readLock"]

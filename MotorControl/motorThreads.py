@@ -31,13 +31,13 @@ class MotorActuator(Thread):
         self.initMotors()
 
     def initMotors(self):
-        self.motor1 = Motor(self.kit, 1, 0.0) #attitude 1
-        self.motor2 = Motor(self.kit, 2, 0.0) #attitude 2
-        self.motor3 = Motor(self.kit, 3, 0.0) #attitude 3 
-        self.motor4 = Motor(self.kit, 4, 0.0) #attitude 3
+        self.motor1 = Motor(self.kit1, 1, 0.0) #attitude 1
+        self.motor2 = Motor(self.kit1, 2, 0.0) #attitude 2
+        self.motor3 = Motor(self.kit1, 3, 0.0) #attitude 3 
+        self.motor4 = Motor(self.kit1, 4, 0.0) #attitude 3
 
-        self.motor5 = Motor(self.kit1, 1, 0.0) #forward thrust 1
-        self.motor6 = Motor(self.kit1, 2, 0.0) #forward thrust 2
+        self.motor5 = Motor(self.kit, 1, 0.0) #forward thrust 1
+        self.motor6 = Motor(self.kit, 2, 0.0) #forward thrust 2
 
     def initMotorKits(self):
         self.kit.motor1.throttle = 0.0
@@ -48,6 +48,8 @@ class MotorActuator(Thread):
         
         self.kit1.motor1.throttle = 0.0
         self.kit1.motor2.throttle = 0.0
+        self.kit1.motor3.throttle = 0.0
+        self.kit1.motor4.throttle = 0.0
 
     def run(self):
         self.actuateMotors()
@@ -77,7 +79,7 @@ class MotorActuator(Thread):
             self.readLock.release()
 
             #actuate
-            #self.depth()
+            self.depth()
             self.skid()
             
 
