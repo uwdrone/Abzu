@@ -1,7 +1,9 @@
 from MotorControl.motorThreads import *
 from RemoteControl.ControllerReceiver import *
 from CameraControl.Record import *
-from PID.Adafruit_BNO055 import BNO055
+from MotorControl.skidSteering import *
+from MotorControl.stickSteering import *
+from Adafruit_BNO055 import BNO055
 from PID.imuPolling import *
 from threading import Lock
 from threading import Condition
@@ -39,7 +41,7 @@ imuData = {
         "heading": 0.0
     }
 
-imuMutex = Lock()
+
 inputMutex = Lock()
 readers = 0
 pendingWriters = 0
@@ -47,8 +49,12 @@ writers = 0
 readLock = Condition(inputMutex)
 writeLock = Condition(inputMutex)
 
+imuMutex = Lock()
+imuReadLock = Condition(imuMutex)
+imuWriteLock = Condition(imuMutex)
+
 inputMonitor = {
-    "mutex": inputMutex,
+    "inputMutex": inputMutex,
     "readers": 0,
     "writers": 0,
     "pendingWriters": 0,
@@ -56,7 +62,9 @@ inputMonitor = {
     "inputMap": inputMap,
     "readLock": readLock,
     "writeLock": writeLock,
-    "imuLock": imuMutex,
+    "imuMutex": imuMutex,
+    "imuReadLock": imuReadLock,
+    "imuWriteLock": imuWriteLock,
     "imuData": imuData
     }
 
@@ -64,6 +72,11 @@ inputMonitor = {
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+
+bno = BNO055.BNO055(serial_port='/dev/serial0', rst=18)
+if not bno.begin():
+    raise RuntimeError('Failed to initialize BNO055! Is the sensor connected?')
+
 
 def handler(signum, handler):
     print("signal handler")
@@ -74,15 +87,20 @@ def launcher():
     print("Commencing Launcher\n")
     rcRcvr = ControllerReceiver(inputMonitor, sock)
     rcRcvr.start()
+
+    imuPoll = IMU(inputMonitor, bno)
+    imuPoll.start()
     
-    mActr = MotorActuator(inputMonitor)
-    mActr.start()
+##    mActr = MotorActuator(inputMonitor)
+##    mActr.start()
+    skidSteer = SkidSteering(inputMonitor)
+    skidSteer.start()
+
+    stickSteer = StickSteering(inputMonitor)
+    stickSteer.start()
     
     camCorder = VideoRecorder(inputMonitor)
     camCorder.start()
-
-    imuPoll = IMU(inputMonitor)
-    imuPoll.start()
     
 if __name__=='__main__':
     launcher();
