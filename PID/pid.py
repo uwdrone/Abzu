@@ -11,7 +11,14 @@ Class PID(Thread):
         self.imuLock = imuLock
         self.imuData = imuData
 
-    def
+    def P(error):
+
+    def I(error):
+
+    def D(val):
+
+    def convert_cart2cross(angle):
+        
 
 ### procedure ###
 # 1. get angle from IMU
