@@ -16,7 +16,7 @@ class VideoRecorder(Thread):
 
     def run(self):
         self.recordVideo()
-    
+
     def recordVideo(self):
         while True:
             self.readLock.acquire(blocking=True, timeout=-1)
@@ -45,4 +45,3 @@ class VideoRecorder(Thread):
                     self.camera.start_recording('/home/pi/Desktop/VideoRecordings/video' + str(self.vid_count) + '.h264')
                     self.vid_count += 1
                     self.recording = True
-                
