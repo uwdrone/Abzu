@@ -15,7 +15,11 @@ try:
     # Run a viewer with an appropriate command line. Uncomment the mplayer
     # version if you would prefer to use mplayer instead of VLC
     #cmdline = ['vlc', '--demux', 'h264', '-']
+<<<<<<< HEAD
     cmdline = ['mplayer', '-fps', '24', '-cache', '1024', '-']
+=======
+    cmdline = ['mplayer', '-fps', '25', '-cache', '1024', '-']
+>>>>>>> 6f10f7d837454956c6550efcfb4cbbffaa8218ea
     player = subprocess.Popen(cmdline, stdin=subprocess.PIPE)
     while True:
         # Repeatedly read 1k of data from the connection and write it to
