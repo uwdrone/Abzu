@@ -1,23 +1,71 @@
+
 from threading import Thread
 import socket
-Class PID(Thread):
-    def __init__(self, inputMonitor):
-        Thread.__init__(self)
-        self.inputMap = inputMonitor["inputMap"]
-        self.readLock = inputMonitor["readLock"]
-        self.writeLock = inputMonitor["writeLock"]
-        self.inputMonitor = inputMonitor
 
-        self.imuLock = imuLock
-        self.imuData = imuData
+##
+# Class PID
+# PID controller -- with basis conversion defined by angle beta
+#
+# written by Brady Pomerleau
 
-    def
+class PID:
+    def __init__(self):
+        self.beta = 0.972 #rad
+        self.k_p = 0
+        self.k_i = 0
+        self.k_d = 50
+        self.max_i = 100000
+        self.min_i = -self.max_i
+        self.sum_0 = 0
+        self.sum_1 = 0
+        self.last_angle = 0
 
-### procedure ###
-# 1. get angle from IMU
-# 2. get controller values
-# 3. compute reference angle
-# 4. compute D term directly from IMU data
-# 5. compute error and transform to motor basis
-# 6. compute P and I
-# 7. sum P, I, and D; normalise and saturate
+    # this is the interface to the controller
+    # inputs: angle and ref are tuples of angles in the form (pitch roll)
+    # outputs: tuple of controller actuation parameters
+    def updatePID(angle, ref):
+        angle = convert_cart2cross(angle[0], angle[1])
+        ref = convert_cart2cross(ref[0], ref[1])
+        error = (ref[0] - angle[0], ref[1]-angle[1])
+        pval = P(error)
+        ival = I(error)
+        dval = D(angle)
+        return (pval[0] + ival[0] + dval[0], pval[1] + ival[1] + dval[1])
+
+    def P(error):
+        # apply proportional gain
+        return (error[0]*self.k_p, error[1]*self.k_p)
+
+    def I(error):
+        # compute integral
+        self.sum_0 += error(0)
+        self.sum_1 += error(1)
+
+        if self.sum_0 > self.max_i:
+            self.sum_0 = self.max_i
+        elif self.sum_0 < self.min_i:
+            self.sum_0 = self.min_i
+
+        if self.sum_1 > self.max_i:
+            self.sum_1 = self.max_i
+        elif self.sum_1 < self.min_i:
+            self.sum_1 = self.min_i
+
+        # apply integral gain
+        return (self.sum_0 * self.k_i, self.sum_1 * self.k_i)
+
+    def D(angle):
+        # compute derivative
+        dif = (angle[0] - self.last_angle[0], angle[1] - self.last_angle[1])
+        self.last_angle = angle
+        #multiply by k_d
+        return (dif[0]*self.k_d, dif[1]*self.k_d)
+
+    # for converting x,y basis into M-basis, specified by angle beta in def __init__
+    def convert_cart2cross(val):
+        pitch = val[0]
+        roll = val[1]
+        M1 = roll*cos(self.beta) + pitch*sin(self.beta)
+        M2 = roll*cos(self.beta) - pitch*sin(self.beta)
+        return (M1, M2)
+
