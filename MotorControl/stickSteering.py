@@ -86,3 +86,7 @@ class StickSteering(Thread):
     def copyUserInput(self):
         self.D_Up = self.inputMap["D_Up"]
         self.D_Down = self.inputMap["D_Down"]
+
+        self.RX = self.inputMap["RX"]
+        self.RY = self.inputMap["RY"]
+
