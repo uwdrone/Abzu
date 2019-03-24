@@ -40,4 +40,4 @@ class IMU(Thread):
             self.imuReadLock.notify_all()
             self.imuWriteLock.release()
 
-            time.sleep(2)
+            time.sleep(0.1)

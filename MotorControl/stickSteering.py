@@ -1,6 +1,7 @@
 from threading import Thread
 from .motor import Motor
 from adafruit_motorkit import MotorKit
+from .pid import *
 import time
 import socket
 import math
@@ -75,6 +76,8 @@ class StickSteering(Thread):
             else:
                 pass
             self.readLock.release()
+
+            
 
     def copyIMUInput(self):
         self.pitch = self.imuData["pitch"]
