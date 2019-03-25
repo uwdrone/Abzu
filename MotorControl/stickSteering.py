@@ -24,6 +24,8 @@ class StickSteering(Thread):
         self.D_Up = 0
         self.D_Down = 0
 
+        self.pid = PID()
+
         self.imuReadLock = inputMonitor["imuReadLock"]
         self.imuWriteLock = inputMonitor["imuWriteLock"]
         self.imuData = inputMonitor["imuData"]
@@ -77,6 +79,7 @@ class StickSteering(Thread):
                 pass
             self.readLock.release()
 
+            self.stick()
             
 
     def copyIMUInput(self):
@@ -84,7 +87,7 @@ class StickSteering(Thread):
         self.roll = self.imuData["roll"]
         self.heading = self.imuData["heading"]
 
-        print('Heading={0:0.2F} Roll={1:0.2F} Pitch={2:0.2F}', self.heading, self.roll, self.pitch)
+        #print('Heading={0:0.2F} Roll={1:0.2F} Pitch={2:0.2F}', self.heading, self.roll, self.pitch)
 
     def copyUserInput(self):
         self.D_Up = self.inputMap["D_Up"]
@@ -92,4 +95,23 @@ class StickSteering(Thread):
 
         self.RX = self.inputMap["RX"]
         self.RY = self.inputMap["RY"]
+        print("RX: " + str(self.RX) + "RY: " + str(self.RY))
+
+    def stick(self):
+        maxAngle = math.pi/3
+
+        thetaX = self.RX*maxAngle
+        thetaY = self.RY*maxAngle
+
+        pitch = math.radians(self.pitch)
+        roll = math.radians(self.roll)
+
+        Gain1, Gain2 = self.pid.updatePID((pitch,roll), (thetaY,thetaX))
+        print("Gain1: " + str(Gain1))
+        print("Gain2: " + str(Gain2))
+
+
+
+
+
 

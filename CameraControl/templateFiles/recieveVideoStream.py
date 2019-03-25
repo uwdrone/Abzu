@@ -6,8 +6,8 @@ from PIL import Image
 # Start a socket listening for connections on 0.0.0.0:8000 (0.0.0.0 means
 # all interfaces)
 
-HOST = '192.168.1.101' # Enter IP or Hostname of your server
-PORT = 12345 # Pick an open Port (1000+ recommended), must match the server port
+HOST = '192.168.1.100' # Enter IP or Hostname of your server
+PORT = 8300 # Pick an open Port (1000+ recommended), must match the server port
 server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 server_socket.bind((HOST, PORT))
@@ -16,6 +16,7 @@ server_socket.listen(0)
 # Accept a single connection and make a file-like object out of it
 connection = server_socket.accept()[0].makefile('rb')
 try:
+    count = 0
     while True:
         # Read the length of the image as a 32-bit unsigned int. If the
         # length is zero, quit the loop
@@ -33,6 +34,8 @@ try:
         print('Image is %dx%d' % image.size)
         image.verify()
         print('Image is verified')
+        image.save('/home/pi/Desktop/VideoRecordings/images/' + str(count) + '.jpeg', )
+        count = count + 1
 finally:
     connection.close()
     server_socket.close()
