@@ -1,13 +1,8 @@
-#Note: Following code was found by Conor at https://randomnerdtutorials.com/video-streaming-with-raspberry-pi-camera/
-
-# Web streaming example
-# Source code from the official PiCamera package
-# http://picamera.readthedocs.io/en/latest/recipes2.html#web-streaming
-
-import io
+from threading import Thread
 import picamera
-import logging
 import socketserver
+import io
+import logging
 from threading import Condition
 from http import server
 
@@ -17,7 +12,7 @@ PAGE= """\
 <title>Raspberry Pi - Surveillance Camera</title>
 </head>
 <body>
-<center><h1>Raspberry Pi - ish Camera</h1></center>
+<center><h1>Raspberry Pi - Fish Camera</h1></center>
 <center><img src="stream.mjpg" width="640" height="480"></center>
 </body>
 </html>
@@ -83,16 +78,25 @@ class StreamingServer(socketserver.ThreadingMixIn, server.HTTPServer):
     allow_reuse_address = True
     daemon_threads = True
 
-##with picamera.PiCamera(resolution='640x480', framerate=24) as camera:
-##    output = StreamingOutput()
-##    #Uncomment the next line to change your Pi's Camera rotation (in degrees)
-##    #camera.rotation = 90
-##    camera.start_recording(output, format='mjpeg')
-##    try:
-###        s.send(output)
-##        TCP_IP = '192.168.1.100'
-##        address = ('', 8100)
-##        server = StreamingServer(address, StreamingHandler)
-##        server.serve_forever()
-##    finally:
-##        camera.stop_recording()
+output = StreamingOutput()
+
+class StreamThread(Thread):
+    def __init__(self):
+        Thread.__init__(self)
+
+    def run(self):
+        print("This is the stream thread")
+        with picamera.PiCamera(resolution='640x480', framerate=24) as camera:
+            #Uncomment the next line to change your Pi's Camera rotation (in degrees)
+            #camera.rotation = 90
+            camera.start_recording(output, format='mjpeg')
+            try:
+        #        s.send(output)
+                TCP_IP = '192.168.1.100'
+                address = ('', 8100)
+                server = StreamingServer(address, StreamingHandler)
+                server.serve_forever()
+            finally:
+                camera.stop_recording()
+
+

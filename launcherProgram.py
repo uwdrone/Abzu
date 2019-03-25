@@ -3,6 +3,7 @@ from RemoteControl.ControllerReceiver import *
 from CameraControl.Record import *
 from MotorControl.skidSteering import *
 from MotorControl.stickSteering import *
+from CameraControl.templateFiles.videoStreamThread import *
 from Adafruit_BNO055 import BNO055
 from PID.imuPolling import *
 from threading import Lock
@@ -73,9 +74,9 @@ inputMonitor = {
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
-bno = BNO055.BNO055(serial_port='/dev/serial0', rst=18)
-if not bno.begin():
-    raise RuntimeError('Failed to initialize BNO055! Is the sensor connected?')
+##bno = BNO055.BNO055(serial_port='/dev/serial0', rst=18)
+##if not bno.begin():
+##    raise RuntimeError('Failed to initialize BNO055! Is the sensor connected?')
 
 
 def handler(signum, handler):
@@ -88,8 +89,8 @@ def launcher():
     rcRcvr = ControllerReceiver(inputMonitor, sock)
     rcRcvr.start()
 
-    imuPoll = IMU(inputMonitor, bno)
-    imuPoll.start()
+    #imuPoll = IMU(inputMonitor, bno)
+    #imuPoll.start()
     
 ##    mActr = MotorActuator(inputMonitor)
 ##    mActr.start()
@@ -99,8 +100,10 @@ def launcher():
     stickSteer = StickSteering(inputMonitor)
     stickSteer.start()
     
-    camCorder = VideoRecorder(inputMonitor)
-    camCorder.start()
+    #camCorder = VideoRecorder(inputMonitor)
+    #camCorder.start()
+    videoStream = StreamThread()
+    videoStream.start()
     
 if __name__=='__main__':
     launcher();
