@@ -1,6 +1,5 @@
 from MotorControl.motorThreads import *
 from RemoteControl.ControllerReceiver import *
-from CameraControl.Record import *
 from MotorControl.skidSteering import *
 from MotorControl.stickSteering import *
 from Adafruit_BNO055 import BNO055
@@ -77,7 +76,6 @@ bno = BNO055.BNO055(serial_port='/dev/serial0', rst=18)
 if not bno.begin():
     raise RuntimeError('Failed to initialize BNO055! Is the sensor connected?')
 
-
 def handler(signum, handler):
     print("signal handler")
     sock.close()
@@ -91,16 +89,12 @@ def launcher():
     imuPoll = IMU(inputMonitor, bno)
     imuPoll.start()
     
-##    mActr = MotorActuator(inputMonitor)
-##    mActr.start()
     skidSteer = SkidSteering(inputMonitor)
     skidSteer.start()
 
     stickSteer = StickSteering(inputMonitor)
     stickSteer.start()
     
-    camCorder = VideoRecorder(inputMonitor)
-    camCorder.start()
-    
+    imuPoll.join()
 if __name__=='__main__':
     launcher();
