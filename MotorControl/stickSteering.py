@@ -37,6 +37,8 @@ class StickSteering(Thread):
         self.motor4 = None
         self.initMotors()
 
+        self.pid = PID()
+
     def initMotorKits(self):
         self.kit.motor1.throttle = 0.0
         self.kit.motor2.throttle = 0.0
@@ -77,14 +79,28 @@ class StickSteering(Thread):
                 pass
             self.readLock.release()
 
+            self.stick()
+
             
+    def stick(self):
+        pitchJS = -1.0*self.RY*math.pi/3
+        rollJS = self.RX*math.pi/3
+
+        pitchIMU = math.radians(self.pitch)
+        rollIMU = math.radians(self.roll)
+
+        angle = (pitchIMU, rollIMU)
+        ref = (pitchJS, rollJS)
+
+        cross1, cross2 = self.pid.updatePID(angle, ref)
+        print("Cross1={} Cross2={}".format(round(cross1,1), round(cross2,1)))
 
     def copyIMUInput(self):
         self.pitch = self.imuData["pitch"]
         self.roll = self.imuData["roll"]
         self.heading = self.imuData["heading"]
 
-        print('Heading={0:0.2F} Roll={1:0.2F} Pitch={2:0.2F}', self.heading, self.roll, self.pitch)
+        #print('Heading={} Roll={} Pitch={}'.format(self.heading, self.roll, self.pitch))
 
     def copyUserInput(self):
         self.D_Up = self.inputMap["D_Up"]

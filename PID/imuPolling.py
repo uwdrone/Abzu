@@ -16,14 +16,6 @@ class IMU(Thread):
         self.inputMonitor = inputMonitor
 
         self.bno = bno
-
-##        self.bno = BNO055.BNO055(serial_port='/dev/serial0', rst=18)
-##
-##        # Initialize the BNO055 and stop if something went wrong.
-##        if not self.bno.begin():
-##            raise RuntimeError('Failed to initialize BNO055! Is the sensor connected?')
-
-
         
     def run(self):
         #this gets run by the thread
