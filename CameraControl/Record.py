@@ -39,9 +39,9 @@ class VideoRecorder(Thread):
 
             if self.triangle == 1:
                 if self.recording == True:
-                    self.camera.stop_recording()
+                    self.camera.stop_recording(splitter_port=2)
                     self.recording = False
                 else:
-                    self.camera.start_recording('/home/pi/Desktop/VideoRecordings/video' + str(self.vid_count) + '.h264')
+                    self.camera.start_recording('/home/pi/Desktop/VideoRecordings/video' + str(self.vid_count) + '.h264',splitter_port=2)
                     self.vid_count += 1
                     self.recording = True
