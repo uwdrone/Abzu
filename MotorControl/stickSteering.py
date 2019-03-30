@@ -84,7 +84,7 @@ class StickSteering(Thread):
         self.roll = self.imuData["roll"]
         self.heading = self.imuData["heading"]
 
-        print('Heading={0:0.2F} Roll={1:0.2F} Pitch={2:0.2F}', self.heading, self.roll, self.pitch)
+        #print('Heading={0:0.2F} Roll={1:0.2F} Pitch={2:0.2F}', self.heading, self.roll, self.pitch)
 
     def copyUserInput(self):
         self.D_Up = self.inputMap["D_Up"]

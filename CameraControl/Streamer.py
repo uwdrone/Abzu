@@ -17,22 +17,6 @@ PAGE="""\
 </body>
 </html>
 """
-output = None
-
-class StreamThread(Thread):
-    def __init__(self, camera):
-        Thread.__init__(self)
-        self.camera = camera
-        output = StreamingOutput()
-
-    def run(self):
-        self.camera.start_recording(output, format'mjpeg')
-        try:
-            address = ('', 8000)
-            server = StreamingServer(address, StreamingHandler)
-            server.serve_forever()
-        finally:
-            camera.stop_recording()
 
 class StreamingOutput(object):
     def __init__(self):
@@ -93,3 +77,19 @@ class StreamingHandler(server.BaseHTTPRequestHandler):
 class StreamingServer(socketserver.ThreadingMixIn, server.HTTPServer):
     allow_reuse_address = True
     daemon_threads = True
+
+output = StreamingOutput()
+
+class StreamThread(Thread):
+    def __init__(self, camera):
+        Thread.__init__(self)
+        self.camera = camera
+
+    def run(self):
+        self.camera.start_recording(output, format='mjpeg')
+        try:
+            address = ('', 8000)
+            server = StreamingServer(address, StreamingHandler)
+            server.serve_forever()
+        finally:
+            camera.stop_recording()

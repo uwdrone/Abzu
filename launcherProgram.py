@@ -2,7 +2,7 @@ from MotorControl.motorThreads import *
 from RemoteControl.ControllerReceiver import *
 from MotorControl.skidSteering import *
 from MotorControl.stickSteering import *
-from CameraControl.streamer import *
+from CameraControl.Streamer import *
 from Adafruit_BNO055 import BNO055
 from PID.imuPolling import *
 from threading import Lock
@@ -88,19 +88,20 @@ def launcher():
     rcRcvr = ControllerReceiver(inputMonitor, sock)
     rcRcvr.start()
 
-    imuPoll = IMU(inputMonitor, bno)
-    imuPoll.start()
+    #imuPoll = IMU(inputMonitor, bno)
+    #imuPoll.start()
     
     skidSteer = SkidSteering(inputMonitor)
     skidSteer.start()
 
-    stickSteer = StickSteering(inputMonitor)
-    stickSteer.start()
+    #stickSteer = StickSteering(inputMonitor)
+    #stickSteer.start()
 
     camera = PiCamera(resolution='640x480', framerate=24)
 
     streamer = StreamThread(camera)
+    streamer.start()
     
-    imuPoll.join()
+    #imuPoll.join()
 if __name__=='__main__':
     launcher();
