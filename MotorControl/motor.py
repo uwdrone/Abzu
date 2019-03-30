@@ -31,25 +31,11 @@ class Motor:
         #print("Step " + str(step))
         
         temp = self.prevThrottle
-        self.motorFunction.throttle = value
+        try:
+            self.motorFunction.throttle = value
+        except:
+            self.prevThrottle = value
+            return
         self.prevThrottle = value
-        
-##        while(temp != value):
-##            print("Acceleration " + str(self.prevThrottle))
-##            
-##            temp = self.prevThrottle + step
-##            if temp > value-step and step > 0.0:
-##                self.prevThrottle = value
-##                break
-##            elif temp < value-step and step < 0.0:
-##                self.prevThrottle = value
-##                break
-##            else:
-##                self.prevThrottle = temp
-##                #try:
-##                self.motorFunction.throttle = temp
-##                #except:
-##                #    return
-##                #time.sleep(delay)
         
         
