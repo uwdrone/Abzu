@@ -101,6 +101,10 @@ class StickSteering(Thread):
 
         pitchIMU = math.radians(self.pitch)
         rollIMU = math.radians(self.roll)
+        if self.pitch < 4.5 and self.pitch > -4.5:
+            pitchIMU = 0.0
+        if self.roll < 4.5 and self.roll > -4.5:
+            rollIMU = 0.0
 
         angle = (pitchIMU, rollIMU)
         ref = (pitchJS, rollJS)
