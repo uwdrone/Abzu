@@ -11,9 +11,9 @@ import socket
 class PID:
     def __init__(self):
         self.beta = 0.972 #rad
-        self.k_p = 0
-        self.k_i = 0
-        self.k_d = 50
+        self.k_p = 0.1
+        self.k_i = 0.1
+        self.k_d = 0.4
         self.max_i = 100000
         self.min_i = -self.max_i
         self.sum_0 = 0
@@ -30,7 +30,22 @@ class PID:
         pval = self.P(error)
         ival = self.I(error)
         dval = self.D(angle)
-        return (pval[0] + ival[0] + dval[0], pval[1] + ival[1] + dval[1])
+        cross1 = pval[0] + ival[0] + dval[0]
+        cross2 = pval[1] + ival[1] + dval[1]
+        
+        if cross1 > 1.0:
+            cross1 = 1.0
+        elif cross1 < -1.0:
+            cross1 = -1.0
+        else:
+            pass
+        if cross2 > 1.0:
+            cross2 = 1.0
+        elif cross2 < -1.0:
+            cross2 = -1.0
+        else:
+            pass
+        return (round(cross1,1), round(cross2,1))
 
     def P(self, error):
         # apply proportional gain
