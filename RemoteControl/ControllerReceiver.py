@@ -11,11 +11,8 @@ class ControllerReceiver(Thread):
         self.readLock = inputMonitor["readLock"]
         
         self.HOST = '192.168.1.100' #Server IP
-<<<<<<< HEAD
-        self.PORT = 12346 #TCP Port
-=======
         self.PORT = 12345 #TCP Port
->>>>>>> c2ac12ce6f536bd198178574bf2b80891fa224d8
+
         self.sock = socket
 
     def run(self):

@@ -3,7 +3,7 @@ from picamera import PiCamera
 import time
 
 class VideoRecorder(Thread):
-    def __init__(self, inputMonitor):
+    def __init__(self, inputMonitor, camera):
         Thread.__init__(self)
         self.inputMap = inputMonitor["inputMap"]
         self.readLock = inputMonitor["readLock"]
@@ -11,7 +11,7 @@ class VideoRecorder(Thread):
         self.inputMonitor = inputMonitor
         self.triangle = None
         self.recording = False
-        self.camera = PiCamera()
+        self.camera = camera
         self.vid_count = 1
 
     def run(self):

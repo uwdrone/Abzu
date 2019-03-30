@@ -2,10 +2,12 @@ from MotorControl.motorThreads import *
 from RemoteControl.ControllerReceiver import *
 from MotorControl.skidSteering import *
 from MotorControl.stickSteering import *
+from CameraControl.streamer import *
 from Adafruit_BNO055 import BNO055
 from PID.imuPolling import *
 from threading import Lock
 from threading import Condition
+from picamera import PiCamera
 import signal
 import socket
 import time
@@ -94,6 +96,10 @@ def launcher():
 
     stickSteer = StickSteering(inputMonitor)
     stickSteer.start()
+
+    camera = PiCamera(resolution='640x480', framerate=24)
+
+    streamer = StreamThread(camera)
     
     imuPoll.join()
 if __name__=='__main__':
