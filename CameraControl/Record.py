@@ -12,7 +12,13 @@ class VideoRecorder(Thread):
         self.triangle = None
         self.recording = False
         self.camera = camera
-        self.vid_count = 1
+        self.vid_count_file = "/home/pi/Desktop/VideoRecordings/vid_count.txt"
+
+        f = open(self.vid_count_file, "r")
+        self.vid_count = int(f.readline())
+        f.close()        
+        
+        
 
     def run(self):
         self.recordVideo()
@@ -44,4 +50,7 @@ class VideoRecorder(Thread):
                 else:
                     self.camera.start_recording('/home/pi/Desktop/VideoRecordings/video' + str(self.vid_count) + '.h264',splitter_port=2)
                     self.vid_count += 1
+                    f = open(self.vid_count_file, "w")
+                    f.write(str(self.vid_count))
+                    f.close()
                     self.recording = True
