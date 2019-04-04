@@ -12,7 +12,7 @@ class ControllerReceiver(Thread):
 
         self.event = inputMonitor["event"]
         
-        self.HOST = '192.168.1.100' #Server IP
+        self.HOST = '192.168.1.102' #Server IP
         self.PORT = 12345 #TCP Port
 
         self.sock = socket

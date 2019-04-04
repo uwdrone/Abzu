@@ -96,8 +96,8 @@ def launcher():
     imuPoll = IMU(inputMonitor, bno)
     imuPoll.start()
     
-    skidSteer = SkidSteering(inputMonitor)
-    skidSteer.start()
+##    skidSteer = SkidSteering(inputMonitor)
+##    skidSteer.start()
 
     stickSteer = StickSteering(inputMonitor)
     stickSteer.start()
@@ -106,13 +106,13 @@ def launcher():
 
     streamer = StreamThread(camera)
     streamer.start()
+##
+##    camCorder = VideoRecorder(inputMonitor, camera)
+##    camCorder.start()
 
-    camCorder = VideoRecorder(inputMonitor, camera)
-    camCorder.start()
-
-    skidSteer.join()
+    #skidSteer.join()
     stickSteer.join()
-    camCorder.join()
+    #camCorder.join()
     imuPoll.join()
     rcRcvr.join()
     exit()
