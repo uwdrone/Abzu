@@ -1,9 +1,3 @@
-#Note: Following code was found by Conor at https://randomnerdtutorials.com/video-streaming-with-raspberry-pi-camera/
-
-# Web streaming example
-# Source code from the official PiCamera package
-# http://picamera.readthedocs.io/en/latest/recipes2.html#web-streaming
-
 import io
 import picamera
 import logging
@@ -11,20 +5,14 @@ import socketserver
 from threading import Condition
 from http import server
 
-#import socket
-#HOST = '192.168.1.101' # Enter IP or Hostname of your server
-#PORT = 12345 # Pick an open Port (1000+ recommended), must match the server port
-#s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-#s.connect((HOST,PORT))
-
-PAGE= """\
+PAGE="""\
 <html>
 <head>
-<title>Raspberry Pi - Surveillance Camera</title>
+<title>picamera MJPEG streaming demo</title>
 </head>
 <body>
-<center><h1>Raspberry Pi - Fish Camera</h1></center>
-<center><img src="stream.mjpg" width="640" height="480"></center>
+<h1>PiCamera MJPEG Streaming Demo</h1>
+<img src="stream.mjpg" width="640" height="480" />
 </body>
 </html>
 """
@@ -34,7 +22,6 @@ class StreamingOutput(object):
         self.frame = None
         self.buffer = io.BytesIO()
         self.condition = Condition()
-        self.output_file = io.open('/home/pi/Desktop/VideoRecordings/testfile.h264', 'wb')
 
     def write(self, buf):
         if buf.startswith(b'\xff\xd8'):
@@ -80,7 +67,7 @@ class StreamingHandler(server.BaseHTTPRequestHandler):
                     self.wfile.write(b'\r\n')
             except Exception as e:
                 logging.warning(
-                    'Remov92.168.1.112:8ed streaming client %s: %s',
+                    'Removed streaming client %s: %s',
                     self.client_address, str(e))
         else:
             self.send_error(404)
@@ -92,14 +79,12 @@ class StreamingServer(socketserver.ThreadingMixIn, server.HTTPServer):
 
 with picamera.PiCamera(resolution='640x480', framerate=24) as camera:
     output = StreamingOutput()
-    #Uncomment the next line to change your Pi's Camera rotation (in degrees)
-    #camera.rotation = 90
     camera.start_recording(output, format='mjpeg')
+    camera.start_recording('test.h264',splitter_port=2)
     try:
-#        s.send(output)
-        TCP_IP = '192.168.1.100'
-        address = ('', 8100)
+        address = ('', 8000)
         server = StreamingServer(address, StreamingHandler)
         server.serve_forever()
     finally:
+        camera.stop_recording(splitter_port=2)
         camera.stop_recording()
