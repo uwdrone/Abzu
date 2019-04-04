@@ -18,7 +18,7 @@ class SkidSteering(Thread):
         self.LX = 0.0
         self.LY = 0.0
         
-        self.kit = MotorKit()
+        self.kit = MotorKit(0x61)
         self.initMotorKits()
 
         self.motorLeft = None
