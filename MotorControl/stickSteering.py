@@ -28,7 +28,7 @@ class StickSteering(Thread):
         self.imuWriteLock = inputMonitor["imuWriteLock"]
         self.imuData = inputMonitor["imuData"]
 
-        self.kit = MotorKit(0x61)
+        self.kit = MotorKit()
         self.initMotorKits()
         
         self.motor1 = None
