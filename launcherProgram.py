@@ -92,8 +92,8 @@ def launcher():
     #imuPoll = IMU(inputMonitor, bno)
     #imuPoll.start()
     
-    skidSteer = SkidSteering(inputMonitor)
-    skidSteer.start()
+    #skidSteer = SkidSteering(inputMonitor)
+    #skidSteer.start()
 
     #stickSteer = StickSteering(inputMonitor)
     #stickSteer.start()

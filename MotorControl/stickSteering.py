@@ -28,7 +28,7 @@ class StickSteering(Thread):
         self.imuWriteLock = inputMonitor["imuWriteLock"]
         self.imuData = inputMonitor["imuData"]
 
-        self.kit = MotorKit()
+        self.kit = MotorKit(0x61)
         self.initMotorKits()
         
         self.motor1 = None
@@ -36,6 +36,15 @@ class StickSteering(Thread):
         self.motor3 = None
         self.motor4 = None
         self.initMotors()
+
+        self.pid = PID()
+        self.cross1 = 0.0
+        self.cross2 = 0.0
+
+        self.motor1Throttle = 0.0
+        self.motor2Throttle = 0.0
+        self.motor3Throttle = 0.0
+        self.motor4Throttle = 0.0
 
     def initMotorKits(self):
         self.kit.motor1.throttle = 0.0
@@ -50,10 +59,6 @@ class StickSteering(Thread):
         self.motor4 = Motor(self.kit, 4, 0.0)
 
     def run(self):
-        self.actuateMotors()
-
-
-    def actuateMotors(self):
         while True:
             self.imuReadLock.acquire(blocking=True, timeout=-1)
             self.imuReadLock.wait()
@@ -77,19 +82,89 @@ class StickSteering(Thread):
                 pass
             self.readLock.release()
 
+            self.stick()
+
+
+    def actuateMotors(self):
+        self.motor1.throttle(self.motor1Throttle, 0.01)
+        self.motor2.throttle(self.motor2Throttle, 0.01)
+        self.motor3.throttle(self.motor3Throttle, 0.01)
+        self.motor4.throttle(self.motor4Throttle, 0.01)
+
             
+    def stick(self):
+        pitchJS = -1.0*self.RY*math.pi/3
+        rollJS = self.RX*math.pi/3
+
+        print("RX: " + str(self.RX))
+        print("RY: " + str(self.RY))
+
+        pitchIMU = math.radians(self.pitch)
+        rollIMU = math.radians(self.roll)
+        if self.pitch < 4.5 and self.pitch > -4.5:
+            pitchIMU = 0.0
+        if self.roll < 4.5 and self.roll > -4.5:
+            rollIMU = 0.0
+
+        angle = (pitchIMU, rollIMU)
+        ref = (pitchJS, rollJS)
+
+        cross1, cross2 = self.pid.updatePID(angle, ref)
+        self.cross1 = cross1
+        self.cross2 = cross2
+        print("Cross1={} Cross2={}".format(round(cross1,1), round(cross2,1)))
+
+        self.motor1Throttle = self.cross1
+        self.motor3Throttle = -1.0*self.cross1
+
+        self.motor2Throttle = self.cross2
+        self.motor4Throttle = -1.0*self.cross2
+
+        self.depth()
+        self.actuateMotors()
+        
 
     def copyIMUInput(self):
         self.pitch = self.imuData["pitch"]
         self.roll = self.imuData["roll"]
         self.heading = self.imuData["heading"]
 
-        #print('Heading={0:0.2F} Roll={1:0.2F} Pitch={2:0.2F}', self.heading, self.roll, self.pitch)
+        print('Heading={} Roll={} Pitch={}'.format(self.heading, self.roll, self.pitch))
 
     def copyUserInput(self):
         self.D_Up = self.inputMap["D_Up"]
         self.D_Down = self.inputMap["D_Down"]
-
+        
         self.RX = self.inputMap["RX"]
         self.RY = self.inputMap["RY"]
 
+##        print("RX: " + str(self.RX))
+##        print("RY: " + str(self.RY))
+
+    def depth(self):
+        if self.D_Up == 1.0:
+            self.ascend()
+        elif self.D_Down == 1.0:
+            self.descend()
+        else:
+            pass
+
+    def ascend(self):
+        diff1 = 1.0 - abs(self.cross1)
+        diff2 = 1.0 - abs(self.cross2)
+
+        self.motor1Throttle = self.cross1 - diff1
+        self.motor3Throttle = -1.0*self.cross1 - diff1
+
+        self.motor2Throttle = self.cross2 - diff2
+        self.motor4Throttle = -1.0*self.cross2 - diff2
+
+    def descend(self):
+        diff1 = 1.0 - abs(self.cross1)
+        diff2 = 1.0 - abs(self.cross2)
+
+        self.motor1Throttle = self.cross1 + diff1
+        self.motor3Throttle = -1.0*self.cross1 + diff1
+
+        self.motor2Throttle = self.cross2 + diff2
+        self.motor4Throttle = -1.0*self.cross2 + diff2
