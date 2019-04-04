@@ -110,11 +110,17 @@ def launcher():
     camCorder = VideoRecorder(inputMonitor, camera)
     camCorder.start()
 
+    print('about to wait on join')
     skidSteer.join()
+    print('Exited skidSteer')
     stickSteer.join()
+    print('Exited stickSteer')
     camCorder.join()
+    print('Exited camCorder')
     imuPoll.join()
+    print('Exited imuPoll')
     rcRcvr.join()
+    print('Exited rcRcvr')
     exit()
 if __name__=='__main__':
     launcher();

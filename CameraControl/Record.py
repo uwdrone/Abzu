@@ -10,7 +10,8 @@ class VideoRecorder(Thread):
         self.writeLock = inputMonitor["writeLock"]
         self.inputMonitor = inputMonitor
         self.event = inputMonitor["event"]
-        self.triangle = None
+        self.triangle = 0
+        self.prevTriangle = 0
         self.recording = False
         self.camera = camera
         self.vid_count_file = "/home/pi/Desktop/VideoRecordings/vid_count.txt"
@@ -45,13 +46,16 @@ class VideoRecorder(Thread):
             self.readLock.release()
 
             if self.triangle == 1:
-                if self.recording == True:
-                    self.camera.stop_recording(splitter_port=2)
+                print("RECORDING: "+str(self.recording))
+                if self.recording == True and self.prevTriangle != 1:
                     self.recording = False
-                else:
+                    self.camera.stop_recording(splitter_port=2)
+                elif self.recording == False and self.prevTriangle != 1:
+                    self.recording = True
                     self.camera.start_recording('/home/pi/Desktop/VideoRecordings/video' + str(self.vid_count) + '.h264',splitter_port=2)
                     self.vid_count += 1
                     f = open(self.vid_count_file, "w")
                     f.write(str(self.vid_count))
                     f.close()
-                    self.recording = True
+            
+            self.prevTriangle = self.triangle
