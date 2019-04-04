@@ -59,6 +59,7 @@ class SkidSteering(Thread):
                 pass
             self.readLock.release()
             self.skid()
+        exit()
 
     def skid(self):
         LX = self.LX

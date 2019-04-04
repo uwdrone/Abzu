@@ -84,12 +84,14 @@ class StreamThread(Thread):
     def __init__(self, camera):
         Thread.__init__(self)
         self.camera = camera
+        self.server = None
 
     def run(self):
         self.camera.start_recording(output, format='mjpeg')
         try:
             address = ('', 8000)
-            server = StreamingServer(address, StreamingHandler)
-            server.serve_forever()
+            self.server = StreamingServer(address, StreamingHandler)
+            self.server.serve_forever()
         finally:
-            camera.stop_recording()
+            self.camera.stop_recording()
+            exit()

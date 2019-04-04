@@ -63,6 +63,9 @@ class ControllerReceiver(Thread):
         #Note: This doesn't work if you use ctrlZ to exit the program,
         #so use ctrlC or you will have to change the port #            
         conn.close()
+        self.readLock.acquire(blocking=True, timeout=-1)
+        self.readLock.notify_all()
+        self.readLock.release()
         exit()
     
     def pushInput(self, message):
@@ -84,7 +87,7 @@ class ControllerReceiver(Thread):
         elif self.square == True and self.inputMap["square"] == 0:
             elapsedTime = time.time() - self.startTime
             print(elapsedTime)
-            if elapsedTime > 2:
+            if elapsedTime > 5:
                 print("kill signal")
                 self.event.set()
             else:

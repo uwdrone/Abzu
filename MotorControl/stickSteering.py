@@ -84,7 +84,7 @@ class StickSteering(Thread):
             self.readLock.release()
 
             self.stick()
-
+        exit()
 
     def actuateMotors(self):
         self.motor1.throttle(self.motor1Throttle, 0.01)

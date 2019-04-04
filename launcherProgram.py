@@ -121,6 +121,10 @@ def launcher():
     print('Exited imuPoll')
     rcRcvr.join()
     print('Exited rcRcvr')
-    exit()
+    streamer.server.shutdown()
+    print("Exited Streamer")
+    if event.is_set():
+        exit()
 if __name__=='__main__':
     launcher();
+    exit()

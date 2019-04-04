@@ -34,4 +34,7 @@ class IMU(Thread):
             self.imuWriteLock.release()
 
             time.sleep(0.1)
+        self.imuWriteLock.acquire(blocking=True, timeout=-1)
+        self.imuReadLock.notify_all()
+        self.imuWriteLock.release()
         exit()

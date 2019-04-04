@@ -46,7 +46,6 @@ class VideoRecorder(Thread):
             self.readLock.release()
 
             if self.triangle == 1:
-                print("RECORDING: "+str(self.recording))
                 if self.recording == True and self.prevTriangle != 1:
                     self.recording = False
                     self.camera.stop_recording(splitter_port=2)
@@ -59,3 +58,4 @@ class VideoRecorder(Thread):
                     f.close()
             
             self.prevTriangle = self.triangle
+        exit()
