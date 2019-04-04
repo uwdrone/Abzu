@@ -12,7 +12,6 @@ class ControllerReceiver(Thread):
         
         self.HOST = '192.168.1.100' #Server IP
         self.PORT = 12345 #TCP Port
-
         self.sock = socket
 
     def run(self):
@@ -54,6 +53,7 @@ class ControllerReceiver(Thread):
             self.readLock.notify_all()
             self.writeLock.release()
 
+        #fixes port changing issue
         #Note: This doesn't work if you use ctrlZ to exit the program,
         #so use ctrlC or you will have to change the port #            
         conn.close()            
