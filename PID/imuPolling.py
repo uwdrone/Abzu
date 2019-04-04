@@ -14,6 +14,7 @@ class IMU(Thread):
         self.imuWriteLock = inputMonitor["imuWriteLock"]
 
         self.inputMonitor = inputMonitor
+        self.event = self.inputMonitor["event"]
 
         self.bno = bno
         
@@ -22,7 +23,7 @@ class IMU(Thread):
         self.updateIMUData()
 
     def updateIMUData(self):
-        while True:
+        while not self.event.is_set():
             heading, roll, pitch = self.bno.read_euler()
             #print('Heading={0:0.2F} Roll={1:0.2F} Pitch={2:0.2F}', heading, roll, pitch)
 
@@ -33,3 +34,4 @@ class IMU(Thread):
             self.imuWriteLock.release()
 
             time.sleep(0.1)
+        exit()

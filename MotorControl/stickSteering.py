@@ -13,6 +13,7 @@ class StickSteering(Thread):
         self.readLock = inputMonitor["readLock"]
         self.writeLock = inputMonitor["writeLock"]
         self.inputMonitor = inputMonitor
+        self.event = inputMonitor["event"]
 
         self.RX = 0.0
         self.RY = 0.0
@@ -59,7 +60,7 @@ class StickSteering(Thread):
         self.motor4 = Motor(self.kit, 4, 0.0)
 
     def run(self):
-        while True:
+        while not self.event.is_set():
             self.imuReadLock.acquire(blocking=True, timeout=-1)
             self.imuReadLock.wait()
 

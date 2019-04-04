@@ -13,6 +13,8 @@ class SkidSteering(Thread):
         self.writeLock = inputMonitor["writeLock"]
         self.inputMonitor = inputMonitor
 
+        self.event = inputMonitor["event"]
+
         self.LX = 0.0
         self.LY = 0.0
         
@@ -38,7 +40,7 @@ class SkidSteering(Thread):
         self.actuateMotors()
 
     def actuateMotors(self):
-        while True:
+        while not self.event.is_set():
             self.readLock.acquire(blocking=True, timeout=-1)
             self.inputMonitor["pendingReaders"] += 1
             self.readLock.wait()
@@ -157,21 +159,3 @@ class SkidSteering(Thread):
     def copyInput(self):
         self.LX = self.inputMap["LX"]
         self.LY = self.inputMap["LY"]
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        

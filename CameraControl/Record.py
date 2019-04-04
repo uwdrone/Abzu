@@ -9,6 +9,7 @@ class VideoRecorder(Thread):
         self.readLock = inputMonitor["readLock"]
         self.writeLock = inputMonitor["writeLock"]
         self.inputMonitor = inputMonitor
+        self.event = inputMonitor["event"]
         self.triangle = None
         self.recording = False
         self.camera = camera
@@ -24,7 +25,7 @@ class VideoRecorder(Thread):
         self.recordVideo()
 
     def recordVideo(self):
-        while True:
+        while not self.event.is_set():
             self.readLock.acquire(blocking=True, timeout=-1)
             self.inputMonitor["pendingReaders"] += 1
             self.readLock.wait()
