@@ -1,2 +1,3 @@
 python3 /home/pi/Abzu/launcherProgram.py
-sudo shutdown
+wait
+sudo shutdown now
