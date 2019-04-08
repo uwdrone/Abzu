@@ -14,16 +14,23 @@ class IMU(Thread):
         self.imuWriteLock = inputMonitor["imuWriteLock"]
 
         self.inputMonitor = inputMonitor
-        self.event = self.inputMonitor["event"]
 
         self.bno = bno
+
+##        self.bno = BNO055.BNO055(serial_port='/dev/serial0', rst=18)
+##
+##        # Initialize the BNO055 and stop if something went wrong.
+##        if not self.bno.begin():
+##            raise RuntimeError('Failed to initialize BNO055! Is the sensor connected?')
+
+
         
     def run(self):
         #this gets run by the thread
         self.updateIMUData()
 
     def updateIMUData(self):
-        while not self.event.is_set():
+        while True:
             heading, roll, pitch = self.bno.read_euler()
             #print('Heading={0:0.2F} Roll={1:0.2F} Pitch={2:0.2F}', heading, roll, pitch)
 
@@ -34,7 +41,3 @@ class IMU(Thread):
             self.imuWriteLock.release()
 
             time.sleep(0.1)
-        self.imuWriteLock.acquire(blocking=True, timeout=-1)
-        self.imuReadLock.notify_all()
-        self.imuWriteLock.release()
-        exit()

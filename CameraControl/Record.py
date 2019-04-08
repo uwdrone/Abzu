@@ -1,21 +1,32 @@
 from threading import Thread
+from picamera import PiCamera
 import time
 
 class VideoRecorder(Thread):
-    def __init__(self, inputMonitor):
+    def __init__(self, inputMonitor, camera):
         Thread.__init__(self)
         self.inputMap = inputMonitor["inputMap"]
         self.readLock = inputMonitor["readLock"]
         self.writeLock = inputMonitor["writeLock"]
         self.inputMonitor = inputMonitor
-        self.triangle = None
+        self.event = inputMonitor["event"]
+        self.triangle = 0
+        self.prevTriangle = 0
         self.recording = False
+        self.camera = camera
+        self.vid_count_file = "/home/pi/Desktop/VideoRecordings/vid_count.txt"
+
+        f = open(self.vid_count_file, "r")
+        self.vid_count = int(f.readline())
+        f.close()        
+        
+        
 
     def run(self):
         self.recordVideo()
-    
+
     def recordVideo(self):
-        while True:
+        while not self.event.is_set():
             self.readLock.acquire(blocking=True, timeout=-1)
             self.inputMonitor["pendingReaders"] += 1
             self.readLock.wait()
@@ -35,5 +46,16 @@ class VideoRecorder(Thread):
             self.readLock.release()
 
             if self.triangle == 1:
-                #do things
-                pass
+                if self.recording == True and self.prevTriangle != 1:
+                    self.recording = False
+                    self.camera.stop_recording(splitter_port=2)
+                elif self.recording == False and self.prevTriangle != 1:
+                    self.recording = True
+                    self.camera.start_recording('/home/pi/Desktop/VideoRecordings/video' + str(self.vid_count) + '.h264',splitter_port=2)
+                    self.vid_count += 1
+                    f = open(self.vid_count_file, "w")
+                    f.write(str(self.vid_count))
+                    f.close()
+            
+            self.prevTriangle = self.triangle
+        exit()

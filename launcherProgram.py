@@ -2,10 +2,14 @@ from MotorControl.motorThreads import *
 from RemoteControl.ControllerReceiver import *
 from MotorControl.skidSteering import *
 from MotorControl.stickSteering import *
+from CameraControl.Streamer import *
+from CameraControl.Record import *
 from Adafruit_BNO055 import BNO055
 from PID.imuPolling import *
 from threading import Lock
 from threading import Condition
+from threading import Event
+from picamera import PiCamera
 import signal
 import socket
 import time
@@ -52,6 +56,8 @@ imuMutex = Lock()
 imuReadLock = Condition(imuMutex)
 imuWriteLock = Condition(imuMutex)
 
+event = Event()
+
 inputMonitor = {
     "inputMutex": inputMutex,
     "readers": 0,
@@ -64,7 +70,8 @@ inputMonitor = {
     "imuMutex": imuMutex,
     "imuReadLock": imuReadLock,
     "imuWriteLock": imuWriteLock,
-    "imuData": imuData
+    "imuData": imuData,
+    "event": event
     }
 
 
@@ -94,7 +101,30 @@ def launcher():
 
     stickSteer = StickSteering(inputMonitor)
     stickSteer.start()
-    
+
+    camera = PiCamera(resolution='640x480', framerate=24)
+
+    streamer = StreamThread(camera)
+    streamer.start()
+
+    camCorder = VideoRecorder(inputMonitor, camera)
+    camCorder.start()
+
+    print('about to wait on join')
+    skidSteer.join()
+    print('Exited skidSteer')
+    stickSteer.join()
+    print('Exited stickSteer')
+    camCorder.join()
+    print('Exited camCorder')
     imuPoll.join()
+    print('Exited imuPoll')
+    rcRcvr.join()
+    print('Exited rcRcvr')
+    streamer.server.shutdown()
+    print("Exited Streamer")
+    if event.is_set():
+        exit()
 if __name__=='__main__':
     launcher();
+    exit()

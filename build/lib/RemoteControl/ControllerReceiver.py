@@ -9,16 +9,10 @@ class ControllerReceiver(Thread):
         self.inputMonitor = inputMonitor
         self.writeLock = inputMonitor["writeLock"]
         self.readLock = inputMonitor["readLock"]
-
-        self.event = inputMonitor["event"]
         
-        self.HOST = '192.168.1.102' #Server IP
+        self.HOST = '192.168.1.100' #Server IP
         self.PORT = 12345 #TCP Port
-
         self.sock = socket
-
-        self.square = False
-        self.startTime = None
 
     def run(self):
         self.receiveUserMotorCommands()
@@ -39,7 +33,7 @@ class ControllerReceiver(Thread):
         (conn, addr) = self.sock.accept()
         print("Connected")
         
-        while not self.event.is_set():
+        while True:
             #print("server polling")
             message = conn.recv(256)
 
@@ -52,7 +46,6 @@ class ControllerReceiver(Thread):
             
             #print(message.decode())
             self.pushInput(message.decode())
-            self.shutdownCheck()
 
             
             self.inputMonitor["pendingWriters"] -= 1
@@ -60,13 +53,10 @@ class ControllerReceiver(Thread):
             self.readLock.notify_all()
             self.writeLock.release()
 
+        #fixes port changing issue
         #Note: This doesn't work if you use ctrlZ to exit the program,
         #so use ctrlC or you will have to change the port #            
-        conn.close()
-        self.readLock.acquire(blocking=True, timeout=-1)
-        self.readLock.notify_all()
-        self.readLock.release()
-        exit()
+        conn.close()            
     
     def pushInput(self, message):
         lst = message.split('|')
@@ -78,18 +68,3 @@ class ControllerReceiver(Thread):
                 self.inputMap[kvp[0]] = float(kvp[1])
             except:
                 return
-
-    def shutdownCheck(self):
-        print(self.square)
-        if self.square == False and self.inputMap["square"] == 1:
-            self.startTime = time.time()
-            self.square = True
-        elif self.square == True and self.inputMap["square"] == 0:
-            elapsedTime = time.time() - self.startTime
-            print(elapsedTime)
-            if elapsedTime > 5:
-                print("kill signal")
-                self.event.set()
-            else:
-                self.square = False
-

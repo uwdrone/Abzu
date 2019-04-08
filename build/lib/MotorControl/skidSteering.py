@@ -13,8 +13,6 @@ class SkidSteering(Thread):
         self.writeLock = inputMonitor["writeLock"]
         self.inputMonitor = inputMonitor
 
-        self.event = inputMonitor["event"]
-
         self.LX = 0.0
         self.LY = 0.0
         
@@ -40,7 +38,7 @@ class SkidSteering(Thread):
         self.actuateMotors()
 
     def actuateMotors(self):
-        while not self.event.is_set():
+        while True:
             self.readLock.acquire(blocking=True, timeout=-1)
             self.inputMonitor["pendingReaders"] += 1
             self.readLock.wait()
@@ -59,7 +57,6 @@ class SkidSteering(Thread):
                 pass
             self.readLock.release()
             self.skid()
-        exit()
 
     def skid(self):
         LX = self.LX
@@ -117,46 +114,64 @@ class SkidSteering(Thread):
         #print("Magnitude: " + str(magnitude))
         if x > 0.0:
             #Right two quadrants
-            self.motorRight.throttle(-1.0*round(y*(1-x), 1), 0.01)
+            self.motorRight.throttle(round(y*(1-x), 1), 0.01)
             if y > 0.0:
                 self.motorLeft.throttle(magnitude, 0.01)
                 print("Up-Right")
-                print("MotorLeft: " + str(magnitude))
-                print("MotorRight: " + str(-1.0*round(y*(1-x), 1)))
+                print("Motor1: " + str(magnitude))
+                print("Motor2: " + str(round(y*(1-x), 1)))
             elif y < 0.0:
                 self.motorLeft.throttle(-1.0*magnitude, 0.01)
                 print("Down-Right")
-                print("MotorLeft: " + str(magnitude))
-                print("MotorRight: " + str(-1.0*round(y*(1-x), 1)))
+                print("Motor1: " + str(magnitude))
+                print("Motor2: " + str(round(y*(1-x), 1)))
             else:
                 self.motorRight.throttle(0.0, 0.01)
                 self.motorLeft.throttle(magnitude, 0.01)
                 print("Right")
-                print("MotorLeft: " + str(magnitude))
+                print("Motor1: " + str(magnitude))
         elif x < 0.0:
             #Left two quadrants
             self.motorLeft.throttle(round(y*abs(-1-x), 1), 0.01)
             if y > 0.0:
-                self.motorRight.throttle(-1.0*magnitude, 0.01)
-                print("Up-Left")
-                print("MotorLeft: " + str(round(y*abs(-1-x), 1)))
-                print("MotorRight: " + str(-1.0*magnitude))
-            elif y < 0.0:
                 self.motorRight.throttle(magnitude, 0.01)
+                print("Up-Left")
+                print("Motor1: " + str(round(y*abs(-1-x), 1)))
+                print("Motor2: " + str(magnitude))
+            elif y < 0.0:
+                self.motorRight.throttle(-1.0*magnitude, 0.01)
                 print("Down-Left")
-                print("MotorLeft: " + str(round(y*abs(-1-x), 1)))
-                print("MotorRight: " + str(magnitude))
+                print("Motor1: " + str(round(y*abs(-1-x), 1)))
+                print("Motor2: " + str(-1.0*magnitude))
             else:
                 self.motorLeft.throttle(0.0, 0.01)
-                self.motorRight.throttle(-1.0*magnitude, 0.01)
+                self.motorRight.throttle(magnitude, 0.01)
                 print("Left")
-                print("MotorRight: " + str(-1.0*magnitude))
+                print("Motor2: " + str(magnitude))
         else:
             print("Straight")
             self.motorLeft.throttle(round(y, 1), 0.01)
-            self.motorRight.throttle(-1.0*round(y, 1), 0.01)
+            self.motorRight.throttle(round(y, 1), 0.01)
         
     
     def copyInput(self):
         self.LX = self.inputMap["LX"]
         self.LY = self.inputMap["LY"]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
