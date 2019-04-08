@@ -7,7 +7,7 @@ def handler(signum, frame):
     s.close()
 
 HOST = '192.168.1.102' # Enter IP or Hostname of your server
-PORT = 12345 # Pick an open Port (1000+ recommended), must match the server port
+PORT = 12346 # Pick an open Port (1000+ recommended), must match the server port
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.connect((HOST,PORT))
