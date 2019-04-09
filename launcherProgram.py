@@ -1,4 +1,3 @@
-from MotorControl.motorThreads import *
 from RemoteControl.ControllerReceiver import *
 from MotorControl.skidSteering import *
 from MotorControl.stickSteering import *
@@ -95,7 +94,7 @@ def launcher():
 
     imuPoll = IMU(inputMonitor, bno)
     imuPoll.start()
-    
+
     skidSteer = SkidSteering(inputMonitor)
     skidSteer.start()
 
