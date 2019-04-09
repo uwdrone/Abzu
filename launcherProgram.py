@@ -88,6 +88,11 @@ def handler(signum, handler):
 signal.signal(signal.SIGTERM, handler)
 
 def launcher():
+    '''
+    Launches peripheral threads with relevant input data
+    and synchronization objects. Waits until all threads
+    are dead to exit.
+    '''
     print("Commencing Launcher\n")
     rcRcvr = ControllerReceiver(inputMonitor, sock)
     rcRcvr.start()

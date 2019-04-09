@@ -1,5 +1,12 @@
 import time
+
 class Motor:
+    '''
+        Motor wrapper class. Create a motor object by passing in
+        the desired adafruit motorkit and the desired motor number.
+        The motor will be initialized to initialThrottle. Using a
+        wrapper allows for custom throttle behaviour.
+    '''
     def __init__(self, motorKit, index, initialThrottle):
         self.motorKit = motorKit
         if index == 1:
@@ -11,25 +18,21 @@ class Motor:
         elif index == 4:
             self.motorFunction = motorKit.motor4
         else:
-            print("Bad input")#deal with this later :)
+            pass
 
         self.prevThrottle = initialThrottle
-        
-    def throttle(self, value, delay):
-        #print("Prev Throttle " + str(self.prevThrottle))
-        #print("Value: " + str(value))
-        
-        difference = value - self.prevThrottle
-        
-        if difference == 0:
-            #print("SAME VALUE NO THROTTLING")
-            return
-        
-        step = round(difference/(abs(difference)*1), 1)
 
-        #print("Difference      " + str(difference))
-        #print("Step " + str(step))
-        
+    def throttle(self, value, delay):
+        '''
+            Throttle the adafruit motor associated with this object
+            to the given value.
+            Deprecated: Gradually increase/decrease the throttle to
+            the given value with the given delay between each step.
+        '''
+        difference = value - self.prevThrottle
+        if difference == 0:
+            return
+        step = round(difference/(abs(difference)*1), 1)
         temp = self.prevThrottle
         try:
             self.motorFunction.throttle = value
@@ -37,5 +40,3 @@ class Motor:
             self.prevThrottle = value
             return
         self.prevThrottle = value
-        
-        
