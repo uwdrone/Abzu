@@ -19,6 +19,9 @@ PAGE="""\
 """
 
 class StreamingOutput(object):
+    '''
+        Custom output object. Overrides the write method to write to a stream.
+    '''
     def __init__(self):
         self.frame = None
         self.buffer = io.BytesIO()
@@ -36,6 +39,9 @@ class StreamingOutput(object):
         return self.buffer.write(buf)
 
 class StreamingHandler(server.BaseHTTPRequestHandler):
+    '''
+        Serves the picamera stream to a web page using the custom output.
+    '''
     def do_GET(self):
         if self.path == '/':
             self.send_response(301)
