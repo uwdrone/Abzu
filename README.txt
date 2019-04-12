@@ -46,4 +46,4 @@ Code Index:
     pyUSB
         found at https://github.com/pyusb/pyusb
 
-    
+    For instructions on using the drone visit the ApplicationNotes
