@@ -3,6 +3,12 @@ from picamera import PiCamera
 import time
 
 class VideoRecorder(Thread):
+    '''
+        This thread waits for user command to toggle recording. Video is recorded
+        from a 'splitter port' which splits the picamera stream onto a second port.
+        The video is saved to a .h264 file. Each video is saved to a new file by 
+        incrementing the vid count. Vid count is stored in a file, and updated.
+    '''
     def __init__(self, inputMonitor, camera):
         Thread.__init__(self)
         self.inputMap = inputMonitor["inputMap"]

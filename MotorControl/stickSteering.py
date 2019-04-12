@@ -7,6 +7,11 @@ import socket
 import math
 
 class StickSteering(Thread):
+    '''
+        This thread handles attitude control. It takes in IMU data and user input
+        and combines them using an instance of the PID class to generate actuation
+        values for the motors.
+    '''
     def __init__(self, inputMonitor):
         Thread.__init__(self)
         self.inputMap = inputMonitor["inputMap"]
@@ -60,13 +65,16 @@ class StickSteering(Thread):
         self.motor4 = Motor(self.kit, 4, 0.0)
 
     def run(self):
+        '''
+            Copies IMU data and user input and then actuates
+            This is repeated in a loop until the shutdown event is set.
+        '''
         while not self.event.is_set():
             self.imuReadLock.acquire(blocking=True, timeout=-1)
             self.imuReadLock.wait()
 
             self.copyIMUInput()
-
-            #self.imuWriteLock.notify_all()
+            
             self.imuReadLock.release()
 
             self.readLock.acquire(blocking=True, timeout=-1)
@@ -87,6 +95,9 @@ class StickSteering(Thread):
         exit()
 
     def actuateMotors(self):
+        '''
+            Actuates all four motors with their current throttle value.
+        '''
         self.motor1.throttle(self.motor1Throttle, 0.01)
         self.motor2.throttle(self.motor2Throttle, 0.01)
         self.motor3.throttle(self.motor3Throttle, 0.01)
@@ -94,26 +105,28 @@ class StickSteering(Thread):
 
             
     def stick(self):
+        '''
+            Inputs appropriate data into the PID controller, actuates the 
+            appropriate motors in opposite directions so that the moments cancel.
+        '''
         pitchJS = -1.0*self.RY*math.pi/3
         rollJS = self.RX*math.pi/3
 
-##        print("RX: " + str(self.RX))
-##        print("RY: " + str(self.RY))
-
         pitchIMU = math.radians(self.pitch)
         rollIMU = math.radians(self.roll)
+        
+        #Creates and IMU deadzone so that the PID is less sensitive.
         if self.pitch < 4.5 and self.pitch > -4.5:
             pitchIMU = 0.0
         if self.roll < 4.5 and self.roll > -4.5:
             rollIMU = 0.0
 
-        angle = (pitchIMU, rollIMU)
-        ref = (pitchJS, rollJS)
+        angle = (pitchIMU, rollIMU) #imu data
+        ref = (pitchJS, rollJS) #user input
 
-        cross1, cross2 = self.pid.updatePID(angle, ref)
+        cross1, cross2 = self.pid.updatePID(angle, ref) #compares the ref vs angle, if different, actuate accordingly
         self.cross1 = cross1
         self.cross2 = cross2
-##        print("Cross1={} Cross2={}".format(round(cross1,1), round(cross2,1)))
 
         self.motor1Throttle = self.cross1
         self.motor3Throttle = -1.0*self.cross1
@@ -121,16 +134,13 @@ class StickSteering(Thread):
         self.motor2Throttle = self.cross2
         self.motor4Throttle = -1.0*self.cross2
 
-        self.depth()
+        self.depth() #these should be called outside of stick, but this works fine
         self.actuateMotors()
         
-
     def copyIMUInput(self):
         self.pitch = self.imuData["pitch"]
         self.roll = self.imuData["roll"]
         self.heading = self.imuData["heading"]
-
-##        print('Heading={} Roll={} Pitch={}'.format(self.heading, self.roll, self.pitch))
 
     def copyUserInput(self):
         self.D_Up = self.inputMap["D_Up"]
@@ -138,9 +148,6 @@ class StickSteering(Thread):
         
         self.RX = self.inputMap["RX"]
         self.RY = self.inputMap["RY"]
-
-##        print("RX: " + str(self.RX))
-##        print("RY: " + str(self.RY))
 
     def depth(self):
         if self.D_Up == 1.0:
@@ -151,6 +158,12 @@ class StickSteering(Thread):
             pass
 
     def ascend(self):
+        '''
+            Sets the throttle values so that the drone rises.
+            Instead of actuating all four to max, the throttle 
+            value for each motor is increased only by the amount
+            from which it is less than max value.
+        '''
         diff1 = 1.0 - abs(self.cross1)
         diff2 = 1.0 - abs(self.cross2)
 
@@ -161,6 +174,9 @@ class StickSteering(Thread):
         self.motor4Throttle = -1.0*self.cross2 - diff2
 
     def descend(self):
+        '''
+            Sets the throttle values so that the drone falls.
+        '''
         diff1 = 1.0 - abs(self.cross1)
         diff2 = 1.0 - abs(self.cross2)
 
